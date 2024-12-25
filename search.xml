@@ -1,0 +1,615 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Git笔记</title>
+    <url>/posts/git-notes/</url>
+    <content><![CDATA[<h2 id="Git简介">Git简介</h2>
+<h3 id="Git的诞生">Git的诞生</h3>
+<h3 id="集中式vs分布式">集中式vs分布式</h3>
+<h2 id="安装Git">安装Git</h2>
+<p><strong>在Linux上安装Git</strong></p>
+<p>在Debian系上用<code>sudo apt-get install git</code>就可以。</p>
+<p>安装完成后，还需要最后一步，在命令行中输入：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name <span class="string">&quot;Your Name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;email@example.com&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="创建版本库">创建版本库</h2>
+<p>初始化一个Git仓库，使用<code>git init</code>命令。<br>
+添加文件到Git仓库，分为两步：</p>
+<ul>
+<li>第一步，使用<code>git add &lt;file&gt;</code>，可反复使用多次，添加多个文件；</li>
+<li>第二步，使用命令<code>git commit -m &quot;注释&quot;</code>，完成</li>
+</ul>
+<h2 id="时光穿梭机">时光穿梭机</h2>
+<ul>
+<li>要随时掌握工作区的状态，使用<code>git status</code>命令。</li>
+<li>如果<code>git status</code>告诉你有文件被修改过，用<code>git diff</code>可以查看修改内容</li>
+</ul>
+<h3 id="版本回退">版本回退</h3>
+<ul>
+<li><code>HEAD</code>指向的版本就是当前版本，上一个版本是<code>HEAD^</code>，上上一个版本是<code>HEAD^^</code>。Git允许我们在版本的历史之间穿梭，使用命令<code>git reset --hard commit_id</code>。</li>
+<li>穿梭前，用<code>git log</code>可以查看提交历史，以便确定要回退到哪个版本。如果嫌输出信息太多，可以试试<code>git log --pretty=oneline</code></li>
+<li>要重返未来，用<code>git reflog</code>查看命令历史，以便确定要回到未来的哪个版本。</li>
+</ul>
+<h3 id="工作区和暂存区">工作区和暂存区</h3>
+<p><code>git add</code>命令实际上就是把要提交的所有修改放到暂存区（Stage），然后，执行<code>git commit</code>就可以一次性把暂存区的所有修改提交到分支。例如<code>git commit -m &quot;&lt;修改的内容&gt;&quot;</code></p>
+<h3 id="管理修改">管理修改</h3>
+<p>用<code>git diff HEAD -- file</code>查看工作区的版本库里最新版的区别</p>
+<h3 id="撤销修改">撤销修改</h3>
+<p>场景1：当改乱了工作区某个文件的内容 想直接丢弃工作区的修改时，可以用<code>git checkout -- file</code>。</p>
+<p>场景2：改乱的工作区文件已经添加到了暂存区，想丢弃，先用命令<code>git reset HEAD file</code>可以把暂存区的修改撤销掉（unstaged），重新放回工作区；然后用<code>git checkout -- file</code>。</p>
+<p>场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考<strong>版本回退</strong>部分，前提时没有推送到远程仓库。</p>
+<h3 id="删除文件">删除文件</h3>
+<p>用<code>git rm file</code>来删除一个文件。</p>
+<h2 id="远程仓库">远程仓库</h2>
+<p>前提：已注册<a href="https://github.com/">Github</a></p>
+<p>第1步：创建SSH Key。<code>ssh-keygen -t rsa -C &quot;youremail@example.com&quot;</code>,修建地址换为自己的邮箱地址，回车，yes。正常的话会看到用户主目录下的<code>.ssh</code>目录下找到<code>id_rsa</code>私钥，<code>id_rsa.pub</code>公钥。</p>
+<p>第2步：打开Github的设置，增加SSH Key，填上<code>id_rsa.pub</code>文件里的内容。OK！</p>
+<h3 id="添加远程仓库">添加远程仓库</h3>
+<p>要关联一个远程库，使用命令<code>git remote add origin git@server-name:path/repo-name.git</code>；<br>
+关联后，使用命令<code>git push -u origin master</code>第一次推送master分支所有内容；<br>
+此后，每次提交后，只要有必要，就可以使用命令<code>git push origin master</code>推送最新修改；<br>
+分布式版本控制系统的最大好处之一是有没有联网都可以正常工作，有网的时候推送一下就同步了。</p>
+<h3 id="从远程仓库克隆">从远程仓库克隆</h3>
+<p>要克隆一个仓库，首先必须只当仓库的地址，然后使用<code>git clone</code>命令克隆。</p>
+<p>Git支持多种协议，包括<code>https</code>，但是通过<code>ssh</code>支持的原生<code>git</code>协议速度最快。</p>
+<h2 id="分支管理">分支管理</h2>
+<h3 id="创建与合并分支">创建与合并分支</h3>
+<p>Git鼓励大量使用分支：</p>
+<p>查看分支：<code>git branch</code><br>
+创建分支：<code>git branch &lt;name&gt;</code><br>
+切换分支：<code>git checkout &lt;name&gt;</code><br>
+创建+切换分支：<code>git checkout -b &lt;name&gt;</code><br>
+合并某分支到当前分支：<code>git merge &lt;name&gt;</code><br>
+删除分支：<code>git branch -d &lt;name&gt;</code></p>
+<h3 id="解决冲突">解决冲突</h3>
+<p>当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。</p>
+<p>用<code>git log --graph</code>命令可以看到分支合并图。</p>
+<h3 id="分支管理策略">分支管理策略</h3>
+<p>Git分支十分强大，在团队开发中应该充分应用。</p>
+<p>合并分支时，加上<code>--no-ff</code>参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而<code>fast forward</code>合并后就看不出来曾经做过合并。</p>
+<h3 id="BUG分支">BUG分支</h3>
+<p>修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；</p>
+<p>当手头工作没完成时，先把工作现场<code>git stash</code>一下，然后去修复bug，修复后再<code>git stash pop</code>，恢复现场，恢复的同时也把stash内容删了。</p>
+<p>当多次stash，恢复的时候，先用<code>git stash list</code>查看，然后恢复制定的stash，用命令<code>git stash apply stash@&#123;0&#125;</code>，stash@{0}是查看stash list时那次stash的码。</p>
+<h3 id="Feature分支">Feature分支</h3>
+<p>开发一个新feature，最好新建一个分支；</p>
+<p>如果要丢弃一个没有被合并过的分支，可以通过<code>git branch -D &lt;name&gt;</code>强制删除。</p>
+<h3 id="多人协作">多人协作</h3>
+<p>多人协作的工作模式通常如下：</p>
+<ol>
+<li>首先，可以试图用<code>git push origin &lt;branch-name&gt;</code>推送自己的修改；</li>
+<li>如果推送失败，则因为远程分支比本地更新，需要先用<code>git pull</code>试图合并；</li>
+<li>如果合并有冲突，则解决冲突，并在本地提交；</li>
+<li>没有冲突或者解决冲突后，再用<code>git push origin &lt;branch-name&gt;</code>推送就能成功！</li>
+</ol>
+<p>如果<code>git pull</code>提示“no tracking infomation”，则说明本地分支和远程分支的链接关系没有创建，用命令<code>git branch --set-upstream &lt;branch-name&gt; origin/&lt;branch-name&gt;</code>。</p>
+<ul>
+<li>查看远程库信息，使用<code>git remote -v</code>；</li>
+<li>本地分支如果不推送到远程，对其他人就是不可见的；</li>
+</ul>
+<h2 id="标签管理">标签管理</h2>
+<h3 id="创建标签">创建标签</h3>
+<ul>
+<li>命令<code>git tag &lt;name&gt;</code>用于新建一个标签，默认为<code>HEAD</code>，也可以指定一个commit id；</li>
+<li><code>git tag -a &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以指定标签信息；</li>
+<li><code>git tag -s &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以用PGP签名标签；</li>
+<li>命令<code>git tag</code>可以查看所有标签。</li>
+</ul>
+<h3 id="操作标签">操作标签</h3>
+<ul>
+<li>命令<code>git push origin &lt;tagname&gt;</code>可以推送一个本地标签；</li>
+<li>命令<code>git push origin --tags</code>可以推送全部未推送过的标签；</li>
+<li>命令<code>git tag -d &lt;tagname&gt;</code>可以删除一个本地标签；</li>
+<li>命令<code>git push origin :refs/tags/&lt;tagname&gt;</code>可以删除一个远程标签；</li>
+</ul>
+<h2 id="使用Github">使用Github</h2>
+<ul>
+<li>在Github上，可以任意Fork开源仓库；</li>
+<li>自己拥有Fork后的仓库的读写权限；</li>
+<li>可以推送pull request给官方仓库来贡献代码。</li>
+</ul>
+<h2 id="使用码云">使用码云</h2>
+<ul>
+<li>码云和Github的使用方法差不多，具体参考上一节<strong>使用Github</strong>；</li>
+<li>因为众所周知的原因Github访问速度比较感人，But码云不会，并且是国内的；</li>
+<li>有免费的私有仓库，And支持中文，简直是我等英语渣渣的福音；</li>
+</ul>
+<p>本地库与多个远程库关联，嗯，不想说了，直接看廖雪峰<a href="https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000">Git教程</a>这一节吧。</p>
+<h2 id="自定义Git">自定义Git</h2>
+<h3 id="忽略特殊文件">忽略特殊文件</h3>
+<ul>
+<li>编写<code>.gitignore</code>文件，把要忽略的文件名填进去，Git就会自动忽略这些文件。<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a> 上的稍微改一下就可以用了</li>
+<li><code>.gitignore</code>文件本身要放到版本库里，并且可以对<code>.gitignore</code>做版本管理</li>
+</ul>
+<p>忽略文件的原则：</p>
+<ol>
+<li>忽略操作系统自动生成的文件，比如缩略图等；</li>
+<li>忽略编译生成的中间文件、可执行文件等；</li>
+<li>忽略带有自己敏感信息的配置文件；</li>
+</ol>
+<h3 id="配置别名">配置别名</h3>
+<ul>
+<li><code>git config --global alias.st status</code>表示用<code>st</code>作为<code>status</code>的别名，以后敲<code>git st</code>就可以了</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global alias.co checkout</span><br><span class="line">git config --global alias.ci commit</span><br><span class="line">git config --global alias.br brach</span><br><span class="line">git config --global alias.last <span class="string">&#x27;log -1&#x27;</span>     //用`git last`显示最后一次提的交</span><br><span class="line">git config --global alias.lg <span class="string">&quot;log --color --graph --pretty=format:&#x27;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&#x27; --abbrev-commit&quot;</span>     //查看提交历史，丧心病狂版</span><br></pre></td></tr></table></figure>
+<h2 id="搭建Git服务器">搭建Git服务器</h2>
+<ul>
+<li>
+<p>搭建Git服务器，参考<a href="https://github.com/sitaramc/gitolite">教程原文</a>；</p>
+</li>
+<li>
+<p>要方便管理公钥，用<a href="https://github.com/sitaramc/gitolite">Gitosis</a>；</p>
+</li>
+<li>
+<p>要像SVN那样变态控制权限，用[Gitolite][5]；</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java问题排查</title>
+    <url>/posts/java-troubleshooting/</url>
+    <content><![CDATA[<h2 id="排查业务问题">排查业务问题</h2>
+<ol>
+<li>采用<code>tail -fn 200 log_file </code>实时查询线上日志</li>
+<li>找准日志搜索关键字 keyWord，例如 orderid、mobileId、reqId 等</li>
+<li>采用<code>grep keyWord log_file</code>查询关键字所在行的日志</li>
+<li>采用 <code>grep -C n keyWord log_file</code>匹配关键字所在行的上下 n 行</li>
+<li>采用<code>grep keyWord log_file | wc -l</code>匹配关键字的行数有多少</li>
+<li>根据实际排查日志场景进行搜索 tail、grep 用的最多</li>
+</ol>
+<h2 id="线上应用-CPU-占用过高">线上应用 CPU 占用过高</h2>
+<ol>
+<li>采用<code>top</code>命令，找出 CPU 占用最高的 PID</li>
+<li>通过<code>ps -ef | grep PID</code>查看对应的应用</li>
+<li>采用<code>jstack -l PID &gt;&gt; PID.log</code>获取进程额堆栈信息</li>
+<li>采用<code>ps -mp PID -o THREAD,tid,time</code>拿到占用 CPU 最高的 tid</li>
+<li>采用<code>printf “%x\n” tid</code>获取 16 进制的线程 TID</li>
+<li>采用<code>grep TID -A20 PID.log</code>确定是线程哪里除了问题</li>
+<li>腿疼医腿，辩证施治，对症下药，找准代码位置，进行调整代码</li>
+</ol>
+<h2 id="线上应用内存溢出">线上应用内存溢出</h2>
+<ol>
+<li>
+<p>采用<code>top</code>命令，找出对应的 PID</p>
+</li>
+<li>
+<p>采用<code>jmap -heap PID</code>确认一下分配的内存少不少</p>
+</li>
+<li>
+<p>采用<code>jmap -histo:live PID | more</code>找出分析最耗内存的对象</p>
+</li>
+<li>
+<p>采用<code>ps -efL | grep PID | wc -l</code>查看进程创建的线程数</p>
+</li>
+<li>
+<p>采用<code>ls -l /proc/PID/task | wc -l</code>也可以查看进程创建的线程数</p>
+</li>
+<li>
+<p>采用<code>netstat -apn | grep 4532 | wc -l</code>查看进程网络连接数</p>
+</li>
+<li>
+<p>腿疼医腿，辩证施治，对症下药</p>
+<p>a. 内存分配确实小，适当调整内存；</p>
+<p>b. 对象被频繁创建，且不释放，优化代码；</p>
+<p>c. 不断创建线程或者不断进行网络连接，优化代码。</p>
+</li>
+</ol>
+<h2 id="工具">工具</h2>
+<h3 id="JDK-自带工具">JDK 自带工具</h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>jps</td>
+<td>查看 java 进程概述</td>
+</tr>
+<tr>
+<td>jconsole</td>
+<td>图形化查看内存线程 VM 参数等信息</td>
+</tr>
+<tr>
+<td>jstat</td>
+<td>查看内存使用状况</td>
+</tr>
+<tr>
+<td>jstack</td>
+<td>分析线程</td>
+</tr>
+<tr>
+<td>jmap</td>
+<td>查看内存信息或 dump 下内存详情</td>
+</tr>
+<tr>
+<td>jvisualvm</td>
+<td>图形化工具，功能在 jconsole 之上</td>
+</tr>
+</tbody>
+</table>
+<h3 id="第三方工具">第三方工具</h3>
+<p>Arthas，官网 <a href="https://arthas.aliyun.com">https://arthas.aliyun.com</a>，功能强大，常用命令：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dump</td>
+<td>将已加载的字节码文件保存到特定的目录中</td>
+</tr>
+<tr>
+<td>classloader</td>
+<td>获取类加载器的信息</td>
+</tr>
+<tr>
+<td>monitor</td>
+<td>监控指定类种方法的执行情况</td>
+</tr>
+<tr>
+<td>watch</td>
+<td>观察指定方法的调用情况</td>
+</tr>
+<tr>
+<td>trace</td>
+<td>对方法内部调用路径进行追踪，并输出方法路径上每个节点上耗时</td>
+</tr>
+<tr>
+<td>stack</td>
+<td>输出当前方法被调用的路径</td>
+</tr>
+<tr>
+<td>tt</td>
+<td>记录指定方法每次调用的入参和返回的信息</td>
+</tr>
+<tr>
+<td>options</td>
+<td>全局开关</td>
+</tr>
+<tr>
+<td>profiler</td>
+<td>生成火焰图</td>
+</tr>
+</tbody>
+</table>
+<h2 id="性能问题排查思路">性能问题排查思路</h2>
+<ol>
+<li>设计调优：一个良好的系统设计可以规避很多钱在的性能问题。必须熟悉常用的软件设计方法、设计模式、基本性能组件和常用优化思想。</li>
+<li>代码调优：掌握编码技巧、对算法、数据结构的灵活使用。</li>
+<li>JVM 调优：JVM 的各项参数会直接影响 Java 程序的性能。</li>
+<li>数据库调优：在应用层对 SQL 语句进行优化；对数据库进行优化。</li>
+<li>操作系统调优：操作系统的性能对应用系统也有较大影响。</li>
+<li>腿疼医腿，辩证施治，对症下药。</li>
+</ol>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux上的OpenVPN搭建</title>
+    <url>/posts/OpenVPN-setup/</url>
+    <content><![CDATA[<h2 id="1-环境">1. 环境</h2>
+<h3 id="1-1-硬件和网络拓扑">1.1 硬件和网络拓扑</h3>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586794884591.png" alt="网络拓扑"></p>
+<ul>
+<li>
+<p>OpenVPN Server：双网卡机器，同时连接大小网，提供 VPN 拨号服务。</p>
+</li>
+<li>
+<p>OpenVPN Client：位于大网，通过拨号，获得小网地址后，可以和小网 PC 互相访问。</p>
+</li>
+<li>
+<p>小网 PC：位于小网（如 192.168 网段）</p>
+<blockquote>
+<p><strong>注意</strong>：以下 OpenVPN Server 网络配置相关信息仅供参考，并非真实信息。</p>
+<p>IP1：10.185.80.57		子网掩码1：255.255.254.0<br>
+IP2：192.168.18.6		子网掩码2：255.255.240.0</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="1-2-软件要求">1.2 软件要求</h3>
+<p>操作系统：Centos 7<br>
+第三方包：所有软件包均通过 yum 在线安装</p>
+<h2 id="2-安装配置-OpenVPN-服务端">2.安装配置 OpenVPN 服务端</h2>
+<h3 id="2-1-配置-yum-源">2.1 配置 yum 源</h3>
+<p>由于 rpm 包安装需要的依赖关系可能比较繁杂，这里选用 yum 在线安装。</p>
+<h4 id="2-1-1-配置-Centos-源">2.1.1 配置 Centos 源</h4>
+<p>打开 <a href="https://mirrors.tuna.tsinghua.edu.cn/help/centos/">Centos 清华镜像源</a> ，选择 Centos 7 配置文件，直接使用如下内容覆盖掉<code>/etc/yum.repos.d/CentOS-Base.repo</code>文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[base]</span><br><span class="line">name=CentOS-$releasever - Base</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/os/$basearch/</span><br><span class="line">#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&amp;arch=$basearch&amp;repo=os</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-7</span><br><span class="line"></span><br><span class="line">#released updates</span><br><span class="line">[updates]</span><br><span class="line">name=CentOS-$releasever - Updates</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/updates/$basearch/</span><br><span class="line">#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&amp;arch=$basearch&amp;repo=updates</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-7</span><br><span class="line"></span><br><span class="line">#additional packages that may be useful</span><br><span class="line">[extras]</span><br><span class="line">name=CentOS-$releasever - Extras</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/extras/$basearch/</span><br><span class="line">#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&amp;arch=$basearch&amp;repo=extras</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-7</span><br><span class="line"></span><br><span class="line">#additional packages that extend functionality of existing packages</span><br><span class="line">[centosplus]</span><br><span class="line">name=CentOS-$releasever - Plus</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/centos/$releasever/centosplus/$basearch/</span><br><span class="line">#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&amp;arch=$basearch&amp;repo=centosplus</span><br><span class="line">gpgcheck=1</span><br><span class="line">enabled=0</span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-7</span><br></pre></td></tr></table></figure>
+<p>然后缓存元数据。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum makecache</span><br></pre></td></tr></table></figure>
+<h4 id="2-1-2-配置-EPEL-源">2.1.2 配置 EPEL 源</h4>
+<p>openvpn 在 EPEL 仓库中，所以需要配置 EPEL 源。这里参考<a href="https://mirrors.tuna.tsinghua.edu.cn/help/epel/">清华镜像源epel帮助</a>，在<code>/etc/yum.repos.d</code>目录下增加“epel.repo”文件，内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[epel]</span><br><span class="line">name=Extra Packages for Enterprise Linux 7 - $basearch</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/epel/7/$basearch</span><br><span class="line">#mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&amp;arch=$basearch</span><br><span class="line">failovermethod=priority</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7</span><br><span class="line"></span><br><span class="line">[epel-debuginfo]</span><br><span class="line">name=Extra Packages for Enterprise Linux 7 - $basearch - Debug</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/epel/7/$basearch/debug</span><br><span class="line">#mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-7&amp;arch=$basearch</span><br><span class="line">failovermethod=priority</span><br><span class="line">enabled=0</span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7</span><br><span class="line">gpgcheck=1</span><br><span class="line"></span><br><span class="line">[epel-source]</span><br><span class="line">name=Extra Packages for Enterprise Linux 7 - $basearch - Source</span><br><span class="line">baseurl=https://mirrors.tuna.tsinghua.edu.cn/epel/7/SRPMS</span><br><span class="line">#mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-7&amp;arch=$basearch</span><br><span class="line">failovermethod=priority</span><br><span class="line">enabled=0</span><br><span class="line">gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7</span><br><span class="line">gpgcheck=1</span><br></pre></td></tr></table></figure>
+<p>然后执行下面的命令，缓存元数据。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum makecache</span><br></pre></td></tr></table></figure>
+<h3 id="2-2-安装相关软件包">2.2 安装相关软件包</h3>
+<p>执行如下命令，一次性完成安装</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum -y install lzo openssl easy-rsa openvpn</span><br></pre></td></tr></table></figure>
+<p>安装后，easy-rsa 的相关文件存放于<code>/usr/share/easy-rsa/3.0.3</code>和<code>/usr/share/doc/easy-rsa-3.0.3</code>两个路径下，需要把 easy-rsa 的相关文件放到一个目录，以便后面的操作， 这里我放到<code>/root/EasyRSA-3.0.3/</code>目录。操作如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir /root/EasyRSA-3.0.3</span><br><span class="line">cp -a /usr/share/easy-rsa/3.0.3/* /root/EasyRSA-3.0.3</span><br><span class="line">cp -a /usr/share/doc/easy-rsa-3.0.3/* /root/EasyRSA-3.0.3</span><br></pre></td></tr></table></figure>
+<p>操作完成后，目录中的内容如下</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795038260.png" alt="easy-rsa的相关文件"></p>
+<h3 id="2-3-制作-server-端证书">2.3 制作 server 端证书</h3>
+<p>制作证书需要一个目录，（我这里以<code>/etc/openvpn/</code>目录为 server 端根目录），执行</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cp /root/EasyRSA-3.0.3 /etc/openvpn/	# 复制一份给server端，用于生成客户端证书</span><br><span class="line">cd /etc/openvpn/EasyRSA-3.0.3</span><br><span class="line">cp vars.example vars                  # 复制一份样例，准备修改</span><br><span class="line">vim vars                              # 修改样例</span><br></pre></td></tr></table></figure>
+<p>修改下 EasyRSA-3.0.3 目录下的 vars 这个文件，配置下环境变量，这里配置了主要是方便在后面制作证书的过程中不用输入很多信息，比较方便，我这里的配置如下图，业务可根据需求自行配置。</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795146203.png" alt="vars编辑内容"></p>
+<p>vars 这个文件修改完毕之后，需要 source 一下，再把证书系统初始化，操作如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source vars                     # 把var里面的值写入到环境变量中去</span><br><span class="line">./easyrsa init-pki              # 初始化证书生成环境</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795181625.png" alt="初始化证书系统"></p>
+<p>下一步就是制作 CA 证书了，如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa build-ca				# 制作ca证书</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795209619.png" alt="CA证书制作"></p>
+<p>这里会要求出入一个 CA 证书的密码，可以不用输入，我这里输入的 CA 密码为 123456，同时设置 CA 的 Common Name 为 puma。</p>
+<p><strong>注意：这里CA的这个密码 123456 要记住，因为后续进行 server 证书和 client 证书认证的时候都需要输入这个密码的。如果忘记，需用重新制作根证书。</strong></p>
+<p>下一步就是生成server端的证书了，执行：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa gen-req server nopass	# 生成server端证书，需要输入server端的CommonName，可以自行设置</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586799570954.png" alt="生成server端证书"></p>
+<p>我这里配置的服务器的名字为 server，服务器证书的 Common Name 为 puma_server</p>
+<p>接下来需要对服务器端的证书进行签名认证</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa sign server server	# 认证server端证书，需要前面设置的 CA 密码</span><br></pre></td></tr></table></figure>
+<p><strong>注意：认证证书时需要输入CA的密码</strong>，我这里输入 123456，可以看到，认证成功了。</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795264163.png" alt="签名认证server端证书"></p>
+<p>最后一步就是生成 Diffie-Hellman 文件了，如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa gen-dh				# 生成 dh 证书</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795296654.png" alt="生成dh证书"></p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795322693.png" alt="dh证书生成成功"></p>
+<p>完成后如上图。到这里，server 端的证书和根证书就都生成了，我们把它们拷贝到一个目录下，方便后续 openvpn 的配置文件进行配置。这里把需要用到的证书都拷贝到 <code>/etc/openvpn/server</code> 目录下，操作如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /etc/openvpn/EasyRSA-3.0.3</span><br><span class="line">cp pki/ca.crt ../server/</span><br><span class="line">cp pki/issued/server.crt ../server/</span><br><span class="line">cp pki/private/server.key ../server/</span><br><span class="line">cp pki/dh.pem ../server/</span><br><span class="line">mv /etc/openvpn/server/dh.pem ../server/dh2048.pem	# 根据vars文件中的设置，改名为dh2048.pem</span><br></pre></td></tr></table></figure>
+<p>执行完成后，<code>/etc/openvpn/server</code>目录下应该有4个文件</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795375667.png" alt="server目录下的文件"></p>
+<h3 id="2-4-配置-server-端配置文件">2.4 配置 server 端配置文件</h3>
+<p>执行如下命令写配置文件</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /etc/openvpn/server/</span><br><span class="line">vim server.conf					# 创建 server 端配置文件并编辑，文件内容如下</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 强烈建议配置文件中用绝对路径</span><br><span class="line">port 1194                               # 监听1194端口</span><br><span class="line">proto udp                               # 使用udp协议</span><br><span class="line">dev tun                                 # 通信隧道类型为路由IP隧道</span><br><span class="line">ca /etc/openvpn/server/ca.crt</span><br><span class="line">cert /etc/openvpn/server/server.crt</span><br><span class="line">key /etc/openvpn/server/server.key</span><br><span class="line">dh /etc/openvpn/server/dh2048.pem       # 2048位密钥</span><br><span class="line">server 10.9.0.0 255.255.255.0           # 分配的ip地址区间</span><br><span class="line">ifconfig-pool-persist /etc/openvpn/server/ipp.txt</span><br><span class="line">push &quot;route 192.168.16.0 255.255.240.0&quot; # 给客户端推送路由信息</span><br><span class="line">client-to-client                        # 客户端之间可以互相发现</span><br><span class="line">duplicate-cn                            # 开启证书复用</span><br><span class="line">keepalive 10 120</span><br><span class="line">comp-lzo                                # 启用lzo压缩算法</span><br><span class="line">persist-key</span><br><span class="line">persist-tun</span><br><span class="line">status /etc/openvpn/server/openvpn-status.log</span><br><span class="line">verb 3                                  # 设置日志文件的冗余级别</span><br><span class="line">explicit-exit-notify 1                  # 设置服务器重启时通知客户端，自动重新连接</span><br><span class="line">auth-user-pass-verify /etc/openvpn/server/checkpsw.sh via-env	# 服务端认证</span><br><span class="line">;client-cert-not-required               # 不要求客户端证书</span><br><span class="line">verify-client-cert                      # 要求客户端证书</span><br><span class="line">username-as-common-name</span><br><span class="line">script-security 3                       # 安全等级 3</span><br></pre></td></tr></table></figure>
+<p>上面的配置中我们把用户名密码校验交给了<code>checkpsw.sh</code>，现在写一个校验脚本</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /etc/openvpn/server/</span><br><span class="line">vim checkpsw.sh					# 创建校验脚本，文件内容如下</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"><span class="comment">###########################################################</span></span><br><span class="line">PASSFILE=<span class="string">&quot;/etc/openvpn/server/psw-file&quot;</span></span><br><span class="line">LOG_FILE=<span class="string">&quot;/etc/openvpn/server/openvpn-password.log&quot;</span></span><br><span class="line">TIME_STAMP=`<span class="built_in">date</span> <span class="string">&quot;+%Y-%m-%d %T&quot;</span>`</span><br><span class="line"><span class="comment">###########################################################</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ ! -r <span class="string">&quot;<span class="variable">$&#123;PASSFILE&#125;</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;TIME_STAMP&#125;</span>: Could not open password file \&quot;<span class="variable">$&#123;PASSFILE&#125;</span>\&quot; for reading.&quot;</span> &gt;&gt; <span class="variable">$&#123;LOG_FILE&#125;</span></span><br><span class="line">  <span class="built_in">exit</span> 1</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">CORRECT_PASSWORD=`awk <span class="string">&#x27;!/^;/&amp;&amp;!/^#/&amp;&amp;$1==&quot;&#x27;</span><span class="variable">$&#123;username&#125;</span><span class="string">&#x27;&quot;&#123;print $2;exit&#125;&#x27;</span> <span class="variable">$&#123;PASSFILE&#125;</span>`</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ <span class="string">&quot;<span class="variable">$&#123;CORRECT_PASSWORD&#125;</span>&quot;</span> = <span class="string">&quot;&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;TIME_STAMP&#125;</span>: User does not exist: username=\&quot;<span class="variable">$&#123;username&#125;</span>\&quot;, password=\&quot;<span class="variable">$&#123;password&#125;</span>\&quot;.&quot;</span> &gt;&gt; <span class="variable">$&#123;LOG_FILE&#125;</span></span><br><span class="line">  <span class="built_in">exit</span> 1</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ <span class="string">&quot;<span class="variable">$&#123;password&#125;</span>&quot;</span> = <span class="string">&quot;<span class="variable">$&#123;CORRECT_PASSWORD&#125;</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;TIME_STAMP&#125;</span>: Successful authentication: username=\&quot;<span class="variable">$&#123;username&#125;</span>\&quot;.&quot;</span> &gt;&gt; <span class="variable">$&#123;LOG_FILE&#125;</span></span><br><span class="line">  <span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$&#123;TIME_STAMP&#125;</span>: Incorrect password: username=\&quot;<span class="variable">$&#123;username&#125;</span>\&quot;, password=\&quot;<span class="variable">$&#123;password&#125;</span>\&quot;.&quot;</span> &gt;&gt; <span class="variable">$&#123;LOG_FILE&#125;</span></span><br><span class="line"><span class="built_in">exit</span> 1</span><br></pre></td></tr></table></figure>
+<p>保存后，给脚本加上可执行权限。接着编写 psw-file 文件，其中保存着已授权的用户名和密码。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">chmod +x checkpsw.sh</span><br><span class="line">vim psw-file					# 编写psw-file文件，内容如下</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">用户名1 密码1</span><br><span class="line">用户名2 密码2</span><br></pre></td></tr></table></figure>
+<p>执行如下命令配置 iptables 的 NAT 转发</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -j MASQUERADE</span><br></pre></td></tr></table></figure>
+<p>在 openvpn-server 机器上，编辑<code>/etc/sysctl.conf</code>文件，加入<code>net.ipv4.ip_forward=1</code>到该文件中并保存，开启操作系统的网关转发功能，操作如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/sysctl.conf</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795411956.png" alt="启用系统的网关转发功能"></p>
+<p>修改完成并保存后就运行如下命令：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sysctl -p       # 使 /etc/sysctl.conf 配置文件里面的配置生效</span><br></pre></td></tr></table></figure>
+<h3 id="2-5-启动-server-端">2.5 启动 server 端</h3>
+<p>执行如下命令启动 openvpn 服务端，如图，表示启动成功。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">openvpn --config /etc/openvpn/server/server.conf</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795443042.png" alt="server端启动成功"></p>
+<blockquote>
+<p>注意：OpenVPN 启动后会占用终端，按<code>Ctrl+C</code>停止运行。如果想启动后不占用终端，可加上<code>--daemon</code>参数，如此，启动命令则为：<code>openvpn --daemon --config /etc/openvpn/server/server.conf</code></p>
+</blockquote>
+<h3 id="2-6-设置-OpenVPN-开机自启（可选）">2.6 设置 OpenVPN 开机自启（可选）</h3>
+<p>服务端的安装配置到上一节就完了，为了避免服务器重启后需要手动开启 OpenVPN，这里将其设置为开机自启动，请根据需要选择。</p>
+<p>进入到 <code>/etc/rc.d/</code>目录下，编辑 rc.local 文件，操作命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /etc/rc.d/</span><br><span class="line">vim rc.local</span><br></pre></td></tr></table></figure>
+<p>在 rc.local 文件中新增下列内容</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">OpenVPN start</span></span><br><span class="line">openvpn --daemon --config /etc/openvpn/server/server.conf &gt; /dev/null</span><br><span class="line">if [ $? -ne 0 ]</span><br><span class="line">then</span><br><span class="line">    echo &quot;`date &quot;+%Y-%m-%d %H:%M:%S&quot;` start vpn failed in /etc/rc.d/rc.local&quot; &gt;&gt; /etc/openvpn/server/openvpn-status.log</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+<p>保存后，修改系统时区和时间，使打印到日志中的时间和本地计算机的时间同步，执行操作：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">timedatectl set-timezone Asia/Shanghai	# 设置时区为上海</span><br><span class="line">date -s 10:23:30    # 设置为自己本机时间</span><br></pre></td></tr></table></figure>
+<h2 id="3-安装配置-OpenVPN-的客户端">3. 安装配置 OpenVPN 的客户端</h2>
+<h3 id="3-1-制作-client-端证书">3.1 制作 client 端证书</h3>
+<p>client 端证书的制作过程和 server 端的相似，要注意 client 端制作证书的目录和 server 端并非同一个目录。我用来给client 端制作证书的目录：<code>/root/EasyRSA-3.0.3</code>，给server 端则是：<code>/etc/openvpn/EasyRSA-3.0.3</code>。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /root/EasyRSA-3.0.3/					# 进入客户端证书制作目录</span><br><span class="line">./easyrsa init-pki						# 初始化客户端证书制作目录</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795473382.png" alt="client端证书制作目录初始化"></p>
+<p>创建客户端证书，下面是创建成功的截图，client 的名字为 client_xushan，CommonName 为 puma_client_xushan</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa gen-req client_xushan nopass	# 生成client端证书，需要输入client端的CommonName，可自行设置，可设置密码</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795510577.png" alt="生成client端证书"></p>
+<p>创建成功后，会在<code>pki/reqs/</code>目录下生成一个名为 client_xushan.req 的文件。</p>
+<p>下一步就是在 server 端所在的目录里把上一步生成的 client_xushan.req 这个证书进行签约。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /etc/openvpn/EasyRSA-3.0.3</span><br><span class="line">./easyrsa import-req /root/EasyRSA-3.0.3/pki/reqs/client_xushan.req client_xushan #导入客户端证书</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795536171.png" alt="导入client端证书"></p>
+<p>客户端证书签约完成后，还需要进行最后一步的认证，认证之后就可以使用了，过程如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./easyrsa sign client client_xushan		# 认证客户端证书</span><br></pre></td></tr></table></figure>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795578907.png" alt="认证client端证书"></p>
+<p>到这里，客户端的证书就生成完成了，我们需要把他们拷贝到一个文件夹下，方便后续的使用，如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">把客户端需要的文件统一放到 /etc/openvpn/client 下</span></span><br><span class="line">cp pki/ca.crt ../client</span><br><span class="line">cp pki/issued/client_xushan.crt ../client</span><br><span class="line">cp /root/EasyRSA-3.0.3/pki/private/client_xushan.key ../client</span><br></pre></td></tr></table></figure>
+<p>至此，client 目录下有3个文件<code>ca.crt</code>、<code>client_xushan.crt</code>、<code>client_xushan.key</code>，将 client 目录下载到本地（windows）。</p>
+<h3 id="3-2-client-端安装">3.2 client 端安装</h3>
+<p>客户端一般是 windows，组件全选安装。安装后桌面会有<code>OpenVPN GUI</code>的快捷方式。<img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795604321.png" alt="icon"></p>
+<h3 id="3-3-制作-client-端配置文件">3.3 制作 client 端配置文件</h3>
+<p>在本地（windows）创建 .ovpn的配置文件，名字随便起，这里我的是<code>10.185.80.57.ovpn</code>，配置信息：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">client                    # 表示当前是客户端</span><br><span class="line">dev tun                   # tun 模式（路由模式）</span><br><span class="line">proto udp                 # 使用 udp 协议</span><br><span class="line">remote 10.185.80.57 1194	# 服务器端的ip和端口</span><br><span class="line">resolv-retry infinite     # 断后尝试重连</span><br><span class="line">nobind</span><br><span class="line">persist-key</span><br><span class="line">persist-tun</span><br><span class="line">ca ca.crt</span><br><span class="line">cert client.crt</span><br><span class="line">key client.key</span><br><span class="line">auth-user-pass            # 密码认证</span><br><span class="line">remote-cert-tls server</span><br><span class="line">comp-lzo                  # 启用lzo压缩算法，与server端保持一致</span><br><span class="line">verb 3</span><br></pre></td></tr></table></figure>
+<p>根据配置文件，修改<code>client_xushan.crt</code>文件名为<code>client.crt</code>、修改<code>client_xushan.key</code>文件名为<code>client.key</code>保存后，放到刚下载的 client 文件夹下，把 client 文件夹改名成<code>10.185.80.57</code>。将整个文件夹放在 OpenVPN的安装目录下的 config 文件夹下，启动客户端，选择当前配置，输入用户名和密码后会连接上（必须在 server 端中已授权），如图，连接成功</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795642344.png" alt="客户端连接"></p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/1586795685665.png" alt="客户端分配的ip"></p>
+<p>【可选配置】</p>
+<p>如不想经常输入用户名和密码，可打开客户端ovpn配置文件，将<code>auth-user-pass</code>改成<code>auth-user-pass pass.txt</code>。同时在相同路径下新增一个名为<code>pass.txt</code>的文本文件。<br>
+内容为两行，第一行为 VPN 用户名，第二行为密码。<br>
+重新运行 OpenVPN 客户端，即可不输入密码登录 VPN 了！</p>
+<hr>
+<blockquote>
+<p>参考：</p>
+<ol>
+<li>完整CentOS搭建OpenVPN服务环境图文教程.老左博客</li>
+</ol>
+</blockquote>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>OpenVPN</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>源码阅读-HashMap</title>
+    <url>/posts/read-source-HashMap/</url>
+    <content><![CDATA[<p>HashMap的原理就是用一个数组存储一系列 K-V 结构的 Node 实体，存储位置通过对 key 的 hashCode 计算得到，Node 对象有 next 指针，作为单链表的一个节点。如果发生 hash 冲突，就将新的 Node 插入链表里。链表过长超过阈值的话为了提高查询效率会转为红黑树（JDK 1.8以后）。</p>
+<h2 id="成员变量">成员变量</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//默认初始化容量</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">DEFAULT_INITIAL_CAPACITY</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">4</span>; <span class="comment">// aka 16</span></span><br><span class="line"><span class="comment">//最大容量</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MAXIMUM_CAPACITY</span> <span class="operator">=</span> <span class="number">1</span> &lt;&lt; <span class="number">30</span>;</span><br><span class="line"><span class="comment">//默认负载因子 0.75</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">float</span> <span class="variable">DEFAULT_LOAD_FACTOR</span> <span class="operator">=</span> <span class="number">0.75f</span>;</span><br><span class="line"><span class="comment">//桶中链表树化的阈值 8</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">TREEIFY_THRESHOLD</span> <span class="operator">=</span> <span class="number">8</span>;</span><br><span class="line"><span class="comment">//树转为链表的阈值 6</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">UNTREEIFY_THRESHOLD</span> <span class="operator">=</span> <span class="number">6</span>;</span><br><span class="line"><span class="comment">//table最小树化容量 64</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">MIN_TREEIFY_CAPACITY</span> <span class="operator">=</span> <span class="number">64</span>;</span><br><span class="line"><span class="comment">//hashmap 中键值对的个数</span></span><br><span class="line"><span class="keyword">transient</span> <span class="type">int</span> size;</span><br><span class="line"><span class="comment">//扩容阈值（容量×载因子）</span></span><br><span class="line"><span class="type">int</span> threshold;</span><br><span class="line"><span class="comment">//真正存放数据的地方</span></span><br><span class="line"><span class="keyword">transient</span> Node&lt;K,V&gt;[] table;</span><br></pre></td></tr></table></figure>
+<h3 id="hashMap默认初始化长度是多少？为什么是这么多？">hashMap默认初始化长度是多少？为什么是这么多？</h3>
+<blockquote>
+<p>默认初始化长度是 1&lt;&lt;&lt; 4，之所以不直接写16，是因为位运算比算术运算效率高，之所以选择16，是为了服务与 index 的计算公式 index = hash &amp; (length - 1)（这里采用与运算和取模的效果一样，但性能更好），初始化长度减1后为15，二进制位1111，和 hash 值运算后的结果等同于 hash 后几位的值，只要 hash 值本身分布均匀，那 hash 算法的结果就是均匀的，从而实现均匀分布。</p>
+</blockquote>
+<h3 id="为什么树化标准是8个？">为什么树化标准是8个？</h3>
+<p>在源码注释中有提到：如果 hashCode 分布良好的话，很少出现链表比较长的情况。理想情况下，链表的长度符合<a href="http://www.ruanyifeng.com/blog/2015/06/poisson-distribution.html">泊松分布</a>。各长度的概率如下</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 0:    0.60653066</span></span><br><span class="line"><span class="comment"> * 1:    0.30326533</span></span><br><span class="line"><span class="comment"> * 2:    0.07581633</span></span><br><span class="line"><span class="comment"> * 3:    0.01263606</span></span><br><span class="line"><span class="comment"> * 4:    0.00157952</span></span><br><span class="line"><span class="comment"> * 5:    0.00015795</span></span><br><span class="line"><span class="comment"> * 6:    0.00001316</span></span><br><span class="line"><span class="comment"> * 7:    0.00000094</span></span><br><span class="line"><span class="comment"> * 8:    0.00000006</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<p>当链表长度为8时，概率为0.00000006，概率非常小，红黑树的转换基本不会发生。当然也会有用到：用户使用自己的 hash 算法，导致 hashCode 分布离散很差，链表很长的情况。</p>
+<h3 id="为什么树退化为链表的阈值是6个？">为什么树退化为链表的阈值是6个？</h3>
+<p>增加一个过渡，防止在临界值时增加/删除一个元素时，在树和链表之间频繁的转换，降低性能。</p>
+<h2 id="初始化方法">初始化方法</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 最常用的一个，负载因子0.75</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">HashMap</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.loadFactor = DEFAULT_LOAD_FACTOR; <span class="comment">// all other fields defaulted</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 指定初始化容量，负载因子0.75</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">HashMap</span><span class="params">(<span class="type">int</span> initialCapacity)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>(initialCapacity, DEFAULT_LOAD_FACTOR);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 指定初始化容量和负载因子</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">HashMap</span><span class="params">(<span class="type">int</span> initialCapacity, <span class="type">float</span> loadFactor)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Illegal initial capacity: &quot;</span> +</span><br><span class="line">                initialCapacity);</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &gt; MAXIMUM_CAPACITY)</span><br><span class="line">        initialCapacity = MAXIMUM_CAPACITY;</span><br><span class="line">    <span class="keyword">if</span> (loadFactor &lt;= <span class="number">0</span> || Float.isNaN(loadFactor))</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Illegal load factor: &quot;</span> +</span><br><span class="line">                loadFactor);</span><br><span class="line">    <span class="built_in">this</span>.loadFactor = loadFactor;</span><br><span class="line">    <span class="comment">// 取二次幂里比指定容量大且最接近的一个，比如指定容量10，则输出16</span></span><br><span class="line">    <span class="built_in">this</span>.threshold = tableSizeFor(initialCapacity);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 将传入的map的键值对复制一份放hashmap里，不常用</span></span><br><span class="line"><span class="keyword">public</span> <span class="title function_">HashMap</span><span class="params">(Map&lt;? extends K, ? extends V&gt; m)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.loadFactor = DEFAULT_LOAD_FACTOR;</span><br><span class="line">    putMapEntries(m, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="hash方法">hash方法</h2>
+<p>hash() 方法是 HashMap 的核心方法，算出 key 的 hashCode 后，将算出的结果右移16位，与原 hashCode 按位异或得到 hash 后的值，</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="title function_">hash</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">    <span class="type">int</span> h;</span><br><span class="line">    <span class="keyword">return</span> (key == <span class="literal">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="为什么要右移16位？">为什么要右移16位？</h3>
+<p>让 hashCode 的高16位也参与运算，增加扰动，减少碰撞冲突，因为大部分元素的 hashCode 在低位是相同的。</p>
+<h3 id="相关问题：String的hashCode的实现？">相关问题：String的hashCode的实现？</h3>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">hashCode</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">h</span> <span class="operator">=</span> hash;</span><br><span class="line">    <span class="keyword">if</span> (h == <span class="number">0</span> &amp;&amp; value.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">char</span> val[] = value;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; value.length; i++) &#123;</span><br><span class="line">            h = <span class="number">31</span> * h + val[i];</span><br><span class="line">        &#125;</span><br><span class="line">        hash = h;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> h;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>简单来说就是给字符串的每一位，按位乘31的n次幂，再相加，用自然溢出来等效取模。选择31因为这个质数不大不小，且可以被虚拟机优化，运算效率更高。<code>i*31 = i*(32-1) = i&lt;&lt;5-1</code></p>
+<h2 id="put方法">put方法</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> V <span class="title function_">put</span><span class="params">(K key, V value)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> putVal(hash(key), key, value, <span class="literal">false</span>, <span class="literal">true</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">final</span> V <span class="title function_">putVal</span><span class="params">(<span class="type">int</span> hash, K key, V value, <span class="type">boolean</span> onlyIfAbsent,</span></span><br><span class="line"><span class="params">               <span class="type">boolean</span> evict)</span> &#123;</span><br><span class="line">    <span class="comment">// tab:引用当前HashMap的散列表</span></span><br><span class="line">    <span class="comment">// p:表示当前散列表的元素</span></span><br><span class="line">    <span class="comment">// n:当前散列表数组长度</span></span><br><span class="line">    <span class="comment">// i:表示路由寻址结果</span></span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; <span class="type">int</span> n, i;</span><br><span class="line">    <span class="comment">// 延迟初始化逻辑，第一次调用putVal方法时初始化</span></span><br><span class="line">    <span class="keyword">if</span> ((tab = table) == <span class="literal">null</span> || (n = tab.length) == <span class="number">0</span>)</span><br><span class="line">        n = (tab = resize()).length;</span><br><span class="line">    <span class="comment">// 找到的桶位为null,将key,valuef封装成node对象，放进去就ok</span></span><br><span class="line">    <span class="keyword">if</span> ((p = tab[i = (n - <span class="number">1</span>) &amp; hash]) == <span class="literal">null</span>)</span><br><span class="line">        tab[i] = newNode(hash, key, value, <span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        Node&lt;K,V&gt; e; K k;</span><br><span class="line">        <span class="comment">// 桶位中的元素与当前插入元素的key一致，后续会进行value的替换操作</span></span><br><span class="line">        <span class="keyword">if</span> (p.hash == hash &amp;&amp;</span><br><span class="line">                ((k = p.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            e = p;</span><br><span class="line">        <span class="comment">// 如果桶位中的元素是红黑树</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (p <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">            e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(<span class="built_in">this</span>, tab, hash, key, value);</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 如果桶位中的元素是链表，且链表的头元素与要插入的之不一致</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">binCount</span> <span class="operator">=</span> <span class="number">0</span>; ; ++binCount) &#123;</span><br><span class="line">                <span class="keyword">if</span> ((e = p.next) == <span class="literal">null</span>) &#123;</span><br><span class="line">                    p.next = newNode(hash, key, value, <span class="literal">null</span>);</span><br><span class="line">                    <span class="comment">// 如果当前桶的元素计数大于等于树化阈值，则进行树化</span></span><br><span class="line">                    <span class="keyword">if</span> (binCount &gt;= TREEIFY_THRESHOLD - <span class="number">1</span>) <span class="comment">// -1 for 1st</span></span><br><span class="line">                        treeifyBin(tab, hash);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 找到一个元素与当前要插入的元素的key一致</span></span><br><span class="line">                <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                        ((k = e.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                p = e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 找到了一致的元素，用新的value替换原来的value</span></span><br><span class="line">        <span class="keyword">if</span> (e != <span class="literal">null</span>) &#123; <span class="comment">// existing mapping for key</span></span><br><span class="line">            <span class="type">V</span> <span class="variable">oldValue</span> <span class="operator">=</span> e.value;</span><br><span class="line">            <span class="keyword">if</span> (!onlyIfAbsent || oldValue == <span class="literal">null</span>)</span><br><span class="line">                e.value = value;</span><br><span class="line">            afterNodeAccess(e);</span><br><span class="line">            <span class="keyword">return</span> oldValue;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ++modCount;</span><br><span class="line">    <span class="keyword">if</span> (++size &gt; threshold)</span><br><span class="line">        resize();</span><br><span class="line">    afterNodeInsertion(evict);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在 putVal 方法中为什么要用 <code>i = (n-1) &amp; hash</code> 作为索引运算呢？</p>
+<blockquote>
+<p>这其实是种优化手段，由于数组的大小永远是一个2次幂，在扩容后，一个元素的新索引要么在原位置，要么在原位置+扩容前的容量。这个方法的巧妙处全在于&amp;运算，&amp;运算只会关注 n-1（n=数组长度）的有效位，当扩容后，n的有效位相比之前会多增加一位（n会变成之前的两倍，所以确保数组长度永远是2次幂很重要），然后只需要判断 hash 在新增的有效位的位置是 0 还是 1 就可以算出新的索引位置，如果是 0，如果是 2，索引就是原索引+扩容前的容量。</p>
+</blockquote>
+<h2 id="resize方法">resize方法</h2>
+<p>resize()方法主要是用来扩容，具体操作是新建一个hash表，然后将旧表中的内容重新散列复制到新表中。源码主要分为2部分：</p>
+<ul>
+<li>第一部分主要用于判断当前操作的类型（初始化or扩容）并且计算出新生成的表的容量和阈值。</li>
+<li>第二部分只用于扩容操作时，将旧表中的元素重新散列放入新表。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//扩容方法</span></span><br><span class="line"><span class="keyword">final</span> Node&lt;K,V&gt;[] resize() &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] oldTab = table; <span class="comment">// 引用扩容前的哈希表</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">oldCap</span> <span class="operator">=</span> (oldTab == <span class="literal">null</span>) ? <span class="number">0</span> : oldTab.length;  <span class="comment">// 扩容前table的容量</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">oldThr</span> <span class="operator">=</span> threshold;     <span class="comment">// 扩容前的阈值</span></span><br><span class="line">    <span class="type">int</span> newCap, newThr = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (oldCap &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 扩容前table数组大小已达到最大值，则不扩容，且扩容条件设置为int最大值</span></span><br><span class="line">        <span class="keyword">if</span> (oldCap &gt;= MAXIMUM_CAPACITY) &#123;</span><br><span class="line">            threshold = Integer.MAX_VALUE;</span><br><span class="line">            <span class="keyword">return</span> oldTab;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 正常情况，新容量在老容量的基础上翻倍，则在阈值上也翻倍</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> ((newCap = oldCap &lt;&lt; <span class="number">1</span>) &lt; MAXIMUM_CAPACITY &amp;&amp;</span><br><span class="line">                oldCap &gt;= DEFAULT_INITIAL_CAPACITY)</span><br><span class="line">            newThr = oldThr &lt;&lt; <span class="number">1</span>; <span class="comment">// double threshold</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// oldCap==0，oldThr&gt;0 说明哈希表中的散列表还未初始化，在使用带参构造的时候会发生</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (oldThr &gt; <span class="number">0</span>) <span class="comment">// initial capacity was placed in threshold</span></span><br><span class="line">        newCap = oldThr;</span><br><span class="line">    <span class="comment">//oldCap==0，oldThr&gt;0 使用无参构造的时候</span></span><br><span class="line">    <span class="keyword">else</span> &#123;               <span class="comment">// zero initial threshold signifies using defaults</span></span><br><span class="line">        newCap = DEFAULT_INITIAL_CAPACITY;</span><br><span class="line">        newThr = (<span class="type">int</span>)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (newThr == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="type">float</span> <span class="variable">ft</span> <span class="operator">=</span> (<span class="type">float</span>)newCap * loadFactor;</span><br><span class="line">        newThr = (newCap &lt; MAXIMUM_CAPACITY &amp;&amp; ft &lt; (<span class="type">float</span>)MAXIMUM_CAPACITY ?</span><br><span class="line">                (<span class="type">int</span>)ft : Integer.MAX_VALUE);</span><br><span class="line">    &#125;</span><br><span class="line">    threshold = newThr;</span><br><span class="line">    <span class="meta">@SuppressWarnings(&#123;&quot;rawtypes&quot;,&quot;unchecked&quot;&#125;)</span></span><br><span class="line">    Node&lt;K,V&gt;[] newTab = (Node&lt;K,V&gt;[])<span class="keyword">new</span> <span class="title class_">Node</span>[newCap];</span><br><span class="line">    table = newTab;</span><br><span class="line">    <span class="keyword">if</span> (oldTab != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; oldCap; ++j) &#123;</span><br><span class="line">            Node&lt;K,V&gt; e;</span><br><span class="line">            <span class="comment">// 说明当前桶位有数据</span></span><br><span class="line">            <span class="keyword">if</span> ((e = oldTab[j]) != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="comment">// 方便JVM回收内存</span></span><br><span class="line">                oldTab[j] = <span class="literal">null</span>;</span><br><span class="line">                <span class="comment">// 当前桶位有一个元素，计算当前元素扩容后的位置</span></span><br><span class="line">                <span class="keyword">if</span> (e.next == <span class="literal">null</span>)</span><br><span class="line">                    newTab[e.hash &amp; (newCap - <span class="number">1</span>)] = e;</span><br><span class="line">                <span class="comment">// 判断当前节点已经树化</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (e <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                    ((TreeNode&lt;K,V&gt;)e).split(<span class="built_in">this</span>, newTab, j, oldCap);</span><br><span class="line">                <span class="comment">// 当前是链表</span></span><br><span class="line">                <span class="keyword">else</span> &#123; <span class="comment">// preserve order</span></span><br><span class="line">                    <span class="comment">// 低位链表：扩容之后数组的下标位置与当前数组下标位置一致</span></span><br><span class="line">                    Node&lt;K,V&gt; loHead = <span class="literal">null</span>, loTail = <span class="literal">null</span>;</span><br><span class="line">                    <span class="comment">// 高位链表：扩容之后数组的下标位置 = 当前数组下标 + 扩容前数组长度</span></span><br><span class="line">                    Node&lt;K,V&gt; hiHead = <span class="literal">null</span>, hiTail = <span class="literal">null</span>;</span><br><span class="line">                    Node&lt;K,V&gt; next;</span><br><span class="line">                    <span class="keyword">do</span> &#123;</span><br><span class="line">                        next = e.next;</span><br><span class="line">                        <span class="comment">// 通过将hash值与 oldCap 相与，将原来的链表拆分为高位链、低位链</span></span><br><span class="line">                        <span class="keyword">if</span> ((e.hash &amp; oldCap) == <span class="number">0</span>) &#123;</span><br><span class="line">                            <span class="keyword">if</span> (loTail == <span class="literal">null</span>)</span><br><span class="line">                                loHead = e;</span><br><span class="line">                            <span class="keyword">else</span></span><br><span class="line">                                loTail.next = e;</span><br><span class="line">                            loTail = e;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="keyword">if</span> (hiTail == <span class="literal">null</span>)</span><br><span class="line">                                hiHead = e;</span><br><span class="line">                            <span class="keyword">else</span></span><br><span class="line">                                hiTail.next = e;</span><br><span class="line">                            hiTail = e;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">while</span> ((e = next) != <span class="literal">null</span>);</span><br><span class="line">                    <span class="keyword">if</span> (loTail != <span class="literal">null</span>) &#123;</span><br><span class="line">                        loTail.next = <span class="literal">null</span>;</span><br><span class="line">                        newTab[j] = loHead;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span> (hiTail != <span class="literal">null</span>) &#123;</span><br><span class="line">                        hiTail.next = <span class="literal">null</span>; <span class="comment">//修改高位链表结尾</span></span><br><span class="line">                        newTab[j + oldCap] = hiHead;    <span class="comment">//放进新table</span></span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newTab;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="get方法">get方法</h2>
+<p>get 方法逻辑比较简单，直接看注释</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> V <span class="title function_">get</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">    Node&lt;K,V&gt; e;</span><br><span class="line">    <span class="keyword">return</span> (e = getNode(hash(key), key)) == <span class="literal">null</span> ? <span class="literal">null</span> : e.value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">final</span> Node&lt;K,V&gt; <span class="title function_">getNode</span><span class="params">(<span class="type">int</span> hash, Object key)</span> &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; first, e; <span class="type">int</span> n; K k;</span><br><span class="line">    <span class="keyword">if</span> ((tab = table) != <span class="literal">null</span> &amp;&amp; (n = tab.length) &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">            (first = tab[(n - <span class="number">1</span>) &amp; hash]) != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="comment">// 第一种情况：定位出的桶元素即为要get的数据</span></span><br><span class="line">        <span class="keyword">if</span> (first.hash == hash &amp;&amp; <span class="comment">// always check first node</span></span><br><span class="line">                ((k = first.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            <span class="keyword">return</span> first;</span><br><span class="line">        <span class="comment">// 第二种情况：当前桶位不只一个元素</span></span><br><span class="line">        <span class="keyword">if</span> ((e = first.next) != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 当前桶位上的为红黑树</span></span><br><span class="line">            <span class="keyword">if</span> (first <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                <span class="keyword">return</span> ((TreeNode&lt;K,V&gt;)first).getTreeNode(hash, key);</span><br><span class="line">            <span class="comment">// 当前桶位上是链表，依次匹配</span></span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                        ((k = e.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                    <span class="keyword">return</span> e;</span><br><span class="line">            &#125; <span class="keyword">while</span> ((e = e.next) != <span class="literal">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="remove方法">remove方法</h2>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> V <span class="title function_">remove</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">    Node&lt;K,V&gt; e;</span><br><span class="line">    <span class="keyword">return</span> (e = removeNode(hash(key), key, <span class="literal">null</span>, <span class="literal">false</span>, <span class="literal">true</span>)) == <span class="literal">null</span> ?</span><br><span class="line">            <span class="literal">null</span> : e.value;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">final</span> Node&lt;K,V&gt; <span class="title function_">removeNode</span><span class="params">(<span class="type">int</span> hash, Object key, Object value,</span></span><br><span class="line"><span class="params">                           <span class="type">boolean</span> matchValue, <span class="type">boolean</span> movable)</span> &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; <span class="type">int</span> n, index;</span><br><span class="line">    <span class="keyword">if</span> ((tab = table) != <span class="literal">null</span> &amp;&amp; (n = tab.length) &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">            (p = tab[index = (n - <span class="number">1</span>) &amp; hash]) != <span class="literal">null</span>) &#123;</span><br><span class="line">        Node&lt;K,V&gt; node = <span class="literal">null</span>, e; K k; V v;</span><br><span class="line">        <span class="comment">// 当前桶位上的节点匹配一致</span></span><br><span class="line">        <span class="keyword">if</span> (p.hash == hash &amp;&amp;</span><br><span class="line">                ((k = p.key) == key || (key != <span class="literal">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            node = p;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> ((e = p.next) != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 是树节点的情况</span></span><br><span class="line">            <span class="keyword">if</span> (p <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                node = ((TreeNode&lt;K,V&gt;)p).getTreeNode(hash, key);</span><br><span class="line">            <span class="comment">// 是链表的情况，遍历链表匹配</span></span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">do</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                            ((k = e.key) == key ||</span><br><span class="line">                                    (key != <span class="literal">null</span> &amp;&amp; key.equals(k)))) &#123;</span><br><span class="line">                        node = e;</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    p = e;</span><br><span class="line">                &#125; <span class="keyword">while</span> ((e = e.next) != <span class="literal">null</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (node != <span class="literal">null</span> &amp;&amp; (!matchValue || (v = node.value) == value ||</span><br><span class="line">                (value != <span class="literal">null</span> &amp;&amp; value.equals(v)))) &#123;</span><br><span class="line">            <span class="comment">// 匹配到的节点是树，用树的方法移除</span></span><br><span class="line">            <span class="keyword">if</span> (node <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                ((TreeNode&lt;K,V&gt;)node).removeTreeNode(<span class="built_in">this</span>, tab, movable);</span><br><span class="line">            <span class="comment">// 如果就是当前桶位上的节点，用下一个节点直接覆盖</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (node == p)</span><br><span class="line">                tab[index] = node.next;</span><br><span class="line">            <span class="comment">// 匹配到的节点是链表，用链表的方法移除</span></span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                p.next = node.next;</span><br><span class="line">            ++modCount;</span><br><span class="line">            --size;</span><br><span class="line">            afterNodeRemoval(node);</span><br><span class="line">            <span class="keyword">return</span> node;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>源码阅读</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>电信机顶盒无线改造</title>
+    <url>/posts/wireless-retrofit-for-telecom-STB/</url>
+    <content><![CDATA[<h2 id="场景">场景</h2>
+<p>原本电信光猫 iTV 口接盒子，在盒子里认证输出 IPTV 信号给客厅电视，光猫的 LAN 口接无线路由器在路由器中拨号用来上网，如下图。现<strong>需要在卧室看电视</strong>，但是卧室没布线，考虑使用无线。</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/20210221095537.png" alt="原网络拓扑"></p>
+<h2 id="设备清单">设备清单</h2>
+<ul>
+<li>电信天翼E家光纤猫（有WIFI模块，GPON天翼网关，华为定制，型号：EchoLife HS8145C）</li>
+<li>电信机顶盒（IPTV盒子，有WIFI模块，烽火定制，型号HG680，个人猜测相似的型号 HG680-J 等只是固件不同，硬件条件都一样）</li>
+<li>无线路由器</li>
+<li>客厅电视（WIFI或者网线连接均可）</li>
+<li>卧室电视（使用之前的到手的显示器 + 小音箱作为电视）</li>
+</ul>
+<h2 id="改造过程">改造过程</h2>
+<h3 id="获取必要信息">获取必要信息</h3>
+<ul>
+<li>获取光猫配置地址、光猫WIFI名和密码（或者直接网线接 Lan 口）</li>
+<li>获取光猫超级管理员账号密码，网络搜索可得，用户名：telecomadmin   密码：nE7jA%5m（仅适用于华为定制的电信光纤猫部分型号）</li>
+<li>获取机顶盒设置密码：10000（如果不对，尝试6321、8288、10086、10010）</li>
+</ul>
+<h3 id="IPTV走无线网络">IPTV走无线网络</h3>
+<p>参考<a href="https://zhuanlan.zhihu.com/p/27008904">改造“电信天翼E家”有线IPTV为无线</a>一文，访问光猫配置地址，使用超级管理员账号密码登录，可以查看到 iTV 端口桥接（连接名称：3_OTHER_B_VID_43），其他端口包括无线 WIFI 桥接上网，改造的思路：将无线网络也绑定到 iTV 业务。</p>
+<p>在“<strong>网络 - 网络设置</strong>”中找到 iTV 的连接，修改“<strong>SSID 端口绑定</strong> ”，勾选“<strong>SSID1(无线网络)</strong>”保存，这样 iTV 端口和 光猫的无线网络都可以使用 IPTV 了。</p>
+<p>在“<strong>应用 - IGMP设置</strong>”中启用“<strong>IGMP Snooping</strong>” 选项，这一步非常重要，否则网络中会有 IGMP 泛洪，导致观看 IPTV 时卡成 PPT😭，同时别的设备无法上网。</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/20210221095729.png" alt="新网络拓扑"></p>
+<p>按照上图改造网络拓扑，输入维护密码进入设置界面，在“<strong>网络设置</strong>”中选择光猫的无线网络，勾选“<strong>高级选项 - PPPOE</strong>”。正常来说机顶盒激活后，配置信息会写入机器，无需填写 IPTV 的账号密码（如果没有，请在办理电信天翼E家网络及IPTV服务协议上找相关账号及密码认证）。连接后会获取一个 10.*.*.* 的电信的组播 IP，此时卧室电视就可以看了。</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/20210221114958.jpg" alt="设置界面"></p>
+<p>由于显示器没有功放，考虑用蓝牙连接家里的小度音箱，尝试后发现蓝牙失败。网上搜索得知这款烽火 HG680 无蓝牙功能，小度音箱也无法接线输入音频，于是老老实实从家里翻出一个带音频输入线的小音箱，接显示器实现电视功能。</p>
+<h3 id="盒子弃用IPTV">盒子弃用IPTV</h3>
+<p>在设置网络的时候发现也可以连接路由器的无线网络，但是看不了IPTV，搜索得知 IPTV 只能使用组播网络，但是烽火 HG680 可以刷机或者通过其他手段安装 app，一下子就打开了新世界的大门。于是有了此方案，机顶盒连接路由器的无线网络，弃用 IPTV。</p>
+<p><img src="https://blog-1258671016.cos.ap-chengdu.myqcloud.com/image/20210221124526.jpg" alt="电信机顶盒"></p>
+<p>各地区类似型号的烽火机顶盒由于固件不同，可能需要不同的方式安装 app</p>
+<ul>
+<li>电脑和机顶盒处于同一网络下，直接 adb 安装</li>
+<li>adb 连接不上，说明 USB 调试模式没打开，参考<a href="https://www.znds.com/forum.php?mod=viewthread&amp;ordertype=1&amp;tid=1174073">电信机顶盒开启ADB方法汇总</a>，如果还不行，则需要通过刷机打开 USB 模式/安装新 app，有风险</li>
+<li>通过 <a href="https://www.znds.com/tv-644159-1-1.html">samba 共享</a>的方式将要安装的 apk 包塞到机顶盒中，通过文件浏览安装</li>
+</ul>
+<p>由于电脑是 deepin，安装 adb 后可以连接，windows 电脑安装 adb 请百度搜索此不赘述</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安装adb工具</span></span><br><span class="line"><span class="built_in">sudo</span> apt install adb -y</span><br><span class="line"><span class="comment"># ip是盒子的ip，成功后显示Success</span></span><br><span class="line">adb connect 192.168.11.238</span><br><span class="line"><span class="comment"># xxx.apk表示要安装的app，最好使用绝对路径，一般先安装当贝桌面</span></span><br><span class="line">adb install xxx.apk</span><br></pre></td></tr></table></figure>
+<p>安装成功后重启机顶盒，开机后一般默认进入当贝桌面。如果还是 IPTV 界面，可以从“应用商城”中找到当贝桌面，打开后设置开机自启。然后安装需要的应用市场/直播/其他 app 即可。毕竟规格不大，不要安装太多，会卡。从当贝桌面也可以进 IPTV，但是使用 IPTV 需要切换为光猫的无线网络。</p>
+<h3 id="方案对比">方案对比</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>方案一：IPTV走无线网络</th>
+<th>方案二：弃用IPTV直接使用盒子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>优点</td>
+<td>高清直播，换频道不卡</td>
+<td>新世界，自由度高</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>只能使用运营商上提供的资源，很多都要收费</td>
+<td>会占用部分上网带宽，直播体验没有IPTV好，可以切换回IPTV，需要切换回光猫的无线网络</td>
+</tr>
+</tbody>
+</table>
+<p>经过权衡，使用了方案二，找了个直播软件，差不多可以替换 IPTV，体验不错。</p>
+]]></content>
+      <categories>
+        <category>生活</category>
+      </categories>
+      <tags>
+        <tag>折腾</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>邮件已读追踪</title>
+    <url>/posts/email-read-tracking/</url>
+    <content><![CDATA[<h2 id="场景">场景</h2>
+<p>最近工作消息模块通过邮件发消息，需要有个邮件已读追踪的功能，即邮件发出去能知道是否已读并记录状态。</p>
+<h2 id="思路">思路</h2>
+<h3 id="利用阅读回执">利用阅读回执</h3>
+<p>阅读回执的原理就是发送邮件的时候，在 header 信息中增加<code>(&quot;Disposition-Notification-To&quot;,&quot;发件人邮箱&quot;)</code>，属于邮件协议的一部分，跟业务没什么关系。接收方打开后会回一封邮件给发送方，表明之前的邮件已读。在实测试中发现接收方可以选择是否发送回执，算是君子协定。</p>
+<h3 id="利用图片加载">利用图片加载</h3>
+<p>考虑发送时默认在邮件中加一张图片，利用打开邮件时加载图片来实现，也可实现阅读次数统计。网上也有类似的邮件追踪工具，感觉可行，开始干活。</p>
+<h2 id="实现">实现</h2>
+<p>可以使用 logo 或者 1*1px 的透明图片，插入到邮件中的效果如下，12345 为消息记录的id，用来与业务对应</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;http://域名/track?msgId=123456&quot;</span> <span class="attr">id</span>=<span class="string">&quot;track&quot;</span> <span class="attr">style</span>=<span class="string">&quot;&quot;</span> <span class="attr">alt</span>=<span class="string">&quot;&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<p>img 标签加载时是 get 请求，后台写个方法用来接请求的参数，pom 依赖和 controller 内容如下</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Controller</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TrackingController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping(&quot;/track&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> ResponseEntity&lt;<span class="type">byte</span>[]&gt; getImage(<span class="meta">@RequestParam(&quot;msgId&quot;)</span> String msgId) <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">//保存消息状态/计数，这里直接打印出来</span></span><br><span class="line">        System.out.println(<span class="string">&quot;消息ID：&quot;</span> + msgId);</span><br><span class="line"></span><br><span class="line">        <span class="type">ClassPathResource</span> <span class="variable">img</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassPathResource</span>(<span class="string">&quot;static/ifread.png&quot;</span>);</span><br><span class="line">        <span class="type">byte</span>[] imageBytes = Files.readAllBytes(img.getFile().toPath());</span><br><span class="line"></span><br><span class="line">        <span class="type">HttpHeaders</span> <span class="variable">headers</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpHeaders</span>();</span><br><span class="line">        headers.setContentType(MediaType.IMAGE_PNG);</span><br><span class="line">        <span class="keyword">return</span> ResponseEntity.ok().headers(headers).body(imageBytes);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>经测试，可以拿到参数 msgId，如需要也可获取 IP 等其他信息。</p>
+<h2 id="优点和局限性">优点和局限性</h2>
+<p>优点：</p>
+<ul>
+<li>实现简单，没有太多代码和逻辑。</li>
+<li>不需要对方确认，强制追踪阅读情况。</li>
+</ul>
+<p>局限性：</p>
+<ul>
+<li>在某些特定的网络/系统/客户端限制访问图片的链接，可能无法生效。</li>
+<li>因为对方不知情，可能涉及隐私的问题。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+      </tags>
+  </entry>
+</search>
