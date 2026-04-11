@@ -1,157 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Git笔记</title>
-    <url>/posts/git-notes/</url>
-    <content><![CDATA[<h2 id="Git简介">Git简介</h2>
-<h3 id="Git的诞生">Git的诞生</h3>
-<h3 id="集中式vs分布式">集中式vs分布式</h3>
-<h2 id="安装Git">安装Git</h2>
-<p><strong>在Linux上安装Git</strong></p>
-<p>在Debian系上用<code>sudo apt-get install git</code>就可以。</p>
-<p>安装完成后，还需要最后一步，在命令行中输入：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name <span class="string">&quot;Your Name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;email@example.com&quot;</span></span><br></pre></td></tr></table></figure>
-<h2 id="创建版本库">创建版本库</h2>
-<p>初始化一个Git仓库，使用<code>git init</code>命令。<br>
-添加文件到Git仓库，分为两步：</p>
-<ul>
-<li>第一步，使用<code>git add &lt;file&gt;</code>，可反复使用多次，添加多个文件；</li>
-<li>第二步，使用命令<code>git commit -m &quot;注释&quot;</code>，完成</li>
-</ul>
-<h2 id="时光穿梭机">时光穿梭机</h2>
-<ul>
-<li>要随时掌握工作区的状态，使用<code>git status</code>命令。</li>
-<li>如果<code>git status</code>告诉你有文件被修改过，用<code>git diff</code>可以查看修改内容</li>
-</ul>
-<h3 id="版本回退">版本回退</h3>
-<ul>
-<li><code>HEAD</code>指向的版本就是当前版本，上一个版本是<code>HEAD^</code>，上上一个版本是<code>HEAD^^</code>。Git允许我们在版本的历史之间穿梭，使用命令<code>git reset --hard commit_id</code>。</li>
-<li>穿梭前，用<code>git log</code>可以查看提交历史，以便确定要回退到哪个版本。如果嫌输出信息太多，可以试试<code>git log --pretty=oneline</code></li>
-<li>要重返未来，用<code>git reflog</code>查看命令历史，以便确定要回到未来的哪个版本。</li>
-</ul>
-<h3 id="工作区和暂存区">工作区和暂存区</h3>
-<p><code>git add</code>命令实际上就是把要提交的所有修改放到暂存区（Stage），然后，执行<code>git commit</code>就可以一次性把暂存区的所有修改提交到分支。例如<code>git commit -m &quot;&lt;修改的内容&gt;&quot;</code></p>
-<h3 id="管理修改">管理修改</h3>
-<p>用<code>git diff HEAD -- file</code>查看工作区的版本库里最新版的区别</p>
-<h3 id="撤销修改">撤销修改</h3>
-<p>场景1：当改乱了工作区某个文件的内容 想直接丢弃工作区的修改时，可以用<code>git checkout -- file</code>。</p>
-<p>场景2：改乱的工作区文件已经添加到了暂存区，想丢弃，先用命令<code>git reset HEAD file</code>可以把暂存区的修改撤销掉（unstaged），重新放回工作区；然后用<code>git checkout -- file</code>。</p>
-<p>场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考<strong>版本回退</strong>部分，前提时没有推送到远程仓库。</p>
-<h3 id="删除文件">删除文件</h3>
-<p>用<code>git rm file</code>来删除一个文件。</p>
-<h2 id="远程仓库">远程仓库</h2>
-<p>前提：已注册<a href="https://github.com/">Github</a></p>
-<p>第1步：创建SSH Key。<code>ssh-keygen -t rsa -C &quot;youremail@example.com&quot;</code>,修建地址换为自己的邮箱地址，回车，yes。正常的话会看到用户主目录下的<code>.ssh</code>目录下找到<code>id_rsa</code>私钥，<code>id_rsa.pub</code>公钥。</p>
-<p>第2步：打开Github的设置，增加SSH Key，填上<code>id_rsa.pub</code>文件里的内容。OK！</p>
-<h3 id="添加远程仓库">添加远程仓库</h3>
-<p>要关联一个远程库，使用命令<code>git remote add origin git@server-name:path/repo-name.git</code>；<br>
-关联后，使用命令<code>git push -u origin master</code>第一次推送master分支所有内容；<br>
-此后，每次提交后，只要有必要，就可以使用命令<code>git push origin master</code>推送最新修改；<br>
-分布式版本控制系统的最大好处之一是有没有联网都可以正常工作，有网的时候推送一下就同步了。</p>
-<h3 id="从远程仓库克隆">从远程仓库克隆</h3>
-<p>要克隆一个仓库，首先必须只当仓库的地址，然后使用<code>git clone</code>命令克隆。</p>
-<p>Git支持多种协议，包括<code>https</code>，但是通过<code>ssh</code>支持的原生<code>git</code>协议速度最快。</p>
-<h2 id="分支管理">分支管理</h2>
-<h3 id="创建与合并分支">创建与合并分支</h3>
-<p>Git鼓励大量使用分支：</p>
-<p>查看分支：<code>git branch</code><br>
-创建分支：<code>git branch &lt;name&gt;</code><br>
-切换分支：<code>git checkout &lt;name&gt;</code><br>
-创建+切换分支：<code>git checkout -b &lt;name&gt;</code><br>
-合并某分支到当前分支：<code>git merge &lt;name&gt;</code><br>
-删除分支：<code>git branch -d &lt;name&gt;</code></p>
-<h3 id="解决冲突">解决冲突</h3>
-<p>当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。</p>
-<p>用<code>git log --graph</code>命令可以看到分支合并图。</p>
-<h3 id="分支管理策略">分支管理策略</h3>
-<p>Git分支十分强大，在团队开发中应该充分应用。</p>
-<p>合并分支时，加上<code>--no-ff</code>参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而<code>fast forward</code>合并后就看不出来曾经做过合并。</p>
-<h3 id="BUG分支">BUG分支</h3>
-<p>修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；</p>
-<p>当手头工作没完成时，先把工作现场<code>git stash</code>一下，然后去修复bug，修复后再<code>git stash pop</code>，恢复现场，恢复的同时也把stash内容删了。</p>
-<p>当多次stash，恢复的时候，先用<code>git stash list</code>查看，然后恢复制定的stash，用命令<code>git stash apply stash@&#123;0&#125;</code>，stash@{0}是查看stash list时那次stash的码。</p>
-<h3 id="Feature分支">Feature分支</h3>
-<p>开发一个新feature，最好新建一个分支；</p>
-<p>如果要丢弃一个没有被合并过的分支，可以通过<code>git branch -D &lt;name&gt;</code>强制删除。</p>
-<h3 id="多人协作">多人协作</h3>
-<p>多人协作的工作模式通常如下：</p>
-<ol>
-<li>首先，可以试图用<code>git push origin &lt;branch-name&gt;</code>推送自己的修改；</li>
-<li>如果推送失败，则因为远程分支比本地更新，需要先用<code>git pull</code>试图合并；</li>
-<li>如果合并有冲突，则解决冲突，并在本地提交；</li>
-<li>没有冲突或者解决冲突后，再用<code>git push origin &lt;branch-name&gt;</code>推送就能成功！</li>
-</ol>
-<p>如果<code>git pull</code>提示“no tracking infomation”，则说明本地分支和远程分支的链接关系没有创建，用命令<code>git branch --set-upstream &lt;branch-name&gt; origin/&lt;branch-name&gt;</code>。</p>
-<ul>
-<li>查看远程库信息，使用<code>git remote -v</code>；</li>
-<li>本地分支如果不推送到远程，对其他人就是不可见的；</li>
-</ul>
-<h2 id="标签管理">标签管理</h2>
-<h3 id="创建标签">创建标签</h3>
-<ul>
-<li>命令<code>git tag &lt;name&gt;</code>用于新建一个标签，默认为<code>HEAD</code>，也可以指定一个commit id；</li>
-<li><code>git tag -a &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以指定标签信息；</li>
-<li><code>git tag -s &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以用PGP签名标签；</li>
-<li>命令<code>git tag</code>可以查看所有标签。</li>
-</ul>
-<h3 id="操作标签">操作标签</h3>
-<ul>
-<li>命令<code>git push origin &lt;tagname&gt;</code>可以推送一个本地标签；</li>
-<li>命令<code>git push origin --tags</code>可以推送全部未推送过的标签；</li>
-<li>命令<code>git tag -d &lt;tagname&gt;</code>可以删除一个本地标签；</li>
-<li>命令<code>git push origin :refs/tags/&lt;tagname&gt;</code>可以删除一个远程标签；</li>
-</ul>
-<h2 id="使用Github">使用Github</h2>
-<ul>
-<li>在Github上，可以任意Fork开源仓库；</li>
-<li>自己拥有Fork后的仓库的读写权限；</li>
-<li>可以推送pull request给官方仓库来贡献代码。</li>
-</ul>
-<h2 id="使用码云">使用码云</h2>
-<ul>
-<li>码云和Github的使用方法差不多，具体参考上一节<strong>使用Github</strong>；</li>
-<li>因为众所周知的原因Github访问速度比较感人，But码云不会，并且是国内的；</li>
-<li>有免费的私有仓库，And支持中文，简直是我等英语渣渣的福音；</li>
-</ul>
-<p>本地库与多个远程库关联，嗯，不想说了，直接看廖雪峰<a href="https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000">Git教程</a>这一节吧。</p>
-<h2 id="自定义Git">自定义Git</h2>
-<h3 id="忽略特殊文件">忽略特殊文件</h3>
-<ul>
-<li>编写<code>.gitignore</code>文件，把要忽略的文件名填进去，Git就会自动忽略这些文件。<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a> 上的稍微改一下就可以用了</li>
-<li><code>.gitignore</code>文件本身要放到版本库里，并且可以对<code>.gitignore</code>做版本管理</li>
-</ul>
-<p>忽略文件的原则：</p>
-<ol>
-<li>忽略操作系统自动生成的文件，比如缩略图等；</li>
-<li>忽略编译生成的中间文件、可执行文件等；</li>
-<li>忽略带有自己敏感信息的配置文件；</li>
-</ol>
-<h3 id="配置别名">配置别名</h3>
-<ul>
-<li><code>git config --global alias.st status</code>表示用<code>st</code>作为<code>status</code>的别名，以后敲<code>git st</code>就可以了</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global alias.co checkout</span><br><span class="line">git config --global alias.ci commit</span><br><span class="line">git config --global alias.br brach</span><br><span class="line">git config --global alias.last <span class="string">&#x27;log -1&#x27;</span>     //用`git last`显示最后一次提的交</span><br><span class="line">git config --global alias.lg <span class="string">&quot;log --color --graph --pretty=format:&#x27;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&#x27; --abbrev-commit&quot;</span>     //查看提交历史，丧心病狂版</span><br></pre></td></tr></table></figure>
-<h2 id="搭建Git服务器">搭建Git服务器</h2>
-<ul>
-<li>
-<p>搭建Git服务器，参考<a href="https://github.com/sitaramc/gitolite">教程原文</a>；</p>
-</li>
-<li>
-<p>要方便管理公钥，用<a href="https://github.com/sitaramc/gitolite">Gitosis</a>；</p>
-</li>
-<li>
-<p>要像SVN那样变态控制权限，用 Gitolite；</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Git</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Java问题排查</title>
     <url>/posts/java-troubleshooting/</url>
     <content><![CDATA[<h2 id="排查业务问题">排查业务问题</h2>
@@ -550,7 +399,7 @@ IP2：192.168.18.6		子网掩码2：255.255.240.0</p>
 <h2 id="待更新">待更新</h2>
 <ul>
 <li>Imgbot 优化后会生成一个 PR，考虑<a href="https://githubdocs.cn/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request">自动合并拉取请求</a>，原理也是 action。</li>
-<li>优化访问速度，CDN + 部署到 Netlify。</li>
+<li>优化访问速度，CDN + <s>部署到 Netlify</s>。</li>
 </ul>
 ]]></content>
       <categories>
@@ -558,6 +407,244 @@ IP2：192.168.18.6		子网掩码2：255.255.240.0</p>
       </categories>
       <tags>
         <tag>折腾</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git笔记</title>
+    <url>/posts/git-notes/</url>
+    <content><![CDATA[<h2 id="Git简介">Git简介</h2>
+<h3 id="Git的诞生">Git的诞生</h3>
+<h3 id="集中式vs分布式">集中式vs分布式</h3>
+<h2 id="安装Git">安装Git</h2>
+<p><strong>在Linux上安装Git</strong></p>
+<p>在Debian系上用<code>sudo apt-get install git</code>就可以。</p>
+<p>安装完成后，还需要最后一步，在命令行中输入：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name <span class="string">&quot;Your Name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;email@example.com&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="创建版本库">创建版本库</h2>
+<p>初始化一个Git仓库，使用<code>git init</code>命令。<br>
+添加文件到Git仓库，分为两步：</p>
+<ul>
+<li>第一步，使用<code>git add &lt;file&gt;</code>，可反复使用多次，添加多个文件；</li>
+<li>第二步，使用命令<code>git commit -m &quot;注释&quot;</code>，完成</li>
+</ul>
+<h2 id="时光穿梭机">时光穿梭机</h2>
+<ul>
+<li>要随时掌握工作区的状态，使用<code>git status</code>命令。</li>
+<li>如果<code>git status</code>告诉你有文件被修改过，用<code>git diff</code>可以查看修改内容</li>
+</ul>
+<h3 id="版本回退">版本回退</h3>
+<ul>
+<li><code>HEAD</code>指向的版本就是当前版本，上一个版本是<code>HEAD^</code>，上上一个版本是<code>HEAD^^</code>。Git允许我们在版本的历史之间穿梭，使用命令<code>git reset --hard commit_id</code>。</li>
+<li>穿梭前，用<code>git log</code>可以查看提交历史，以便确定要回退到哪个版本。如果嫌输出信息太多，可以试试<code>git log --pretty=oneline</code></li>
+<li>要重返未来，用<code>git reflog</code>查看命令历史，以便确定要回到未来的哪个版本。</li>
+</ul>
+<h3 id="工作区和暂存区">工作区和暂存区</h3>
+<p><code>git add</code>命令实际上就是把要提交的所有修改放到暂存区（Stage），然后，执行<code>git commit</code>就可以一次性把暂存区的所有修改提交到分支。例如<code>git commit -m &quot;&lt;修改的内容&gt;&quot;</code></p>
+<h3 id="管理修改">管理修改</h3>
+<p>用<code>git diff HEAD -- file</code>查看工作区的版本库里最新版的区别</p>
+<h3 id="撤销修改">撤销修改</h3>
+<p>场景1：当改乱了工作区某个文件的内容 想直接丢弃工作区的修改时，可以用<code>git checkout -- file</code>。</p>
+<p>场景2：改乱的工作区文件已经添加到了暂存区，想丢弃，先用命令<code>git reset HEAD file</code>可以把暂存区的修改撤销掉（unstaged），重新放回工作区；然后用<code>git checkout -- file</code>。</p>
+<p>场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考<strong>版本回退</strong>部分，前提时没有推送到远程仓库。</p>
+<h3 id="删除文件">删除文件</h3>
+<p>用<code>git rm file</code>来删除一个文件。</p>
+<h2 id="远程仓库">远程仓库</h2>
+<p>前提：已注册<a href="https://github.com/">Github</a></p>
+<p>第1步：创建SSH Key。<code>ssh-keygen -t rsa -C &quot;youremail@example.com&quot;</code>,修建地址换为自己的邮箱地址，回车，yes。正常的话会看到用户主目录下的<code>.ssh</code>目录下找到<code>id_rsa</code>私钥，<code>id_rsa.pub</code>公钥。</p>
+<p>第2步：打开Github的设置，增加SSH Key，填上<code>id_rsa.pub</code>文件里的内容。OK！</p>
+<h3 id="添加远程仓库">添加远程仓库</h3>
+<p>要关联一个远程库，使用命令<code>git remote add origin git@server-name:path/repo-name.git</code>；<br>
+关联后，使用命令<code>git push -u origin master</code>第一次推送master分支所有内容；<br>
+此后，每次提交后，只要有必要，就可以使用命令<code>git push origin master</code>推送最新修改；<br>
+分布式版本控制系统的最大好处之一是有没有联网都可以正常工作，有网的时候推送一下就同步了。</p>
+<h3 id="从远程仓库克隆">从远程仓库克隆</h3>
+<p>要克隆一个仓库，首先必须只当仓库的地址，然后使用<code>git clone</code>命令克隆。</p>
+<p>Git支持多种协议，包括<code>https</code>，但是通过<code>ssh</code>支持的原生<code>git</code>协议速度最快。</p>
+<h2 id="分支管理">分支管理</h2>
+<h3 id="创建与合并分支">创建与合并分支</h3>
+<p>Git鼓励大量使用分支：</p>
+<p>查看分支：<code>git branch</code><br>
+创建分支：<code>git branch &lt;name&gt;</code><br>
+切换分支：<code>git checkout &lt;name&gt;</code><br>
+创建+切换分支：<code>git checkout -b &lt;name&gt;</code><br>
+合并某分支到当前分支：<code>git merge &lt;name&gt;</code><br>
+删除分支：<code>git branch -d &lt;name&gt;</code></p>
+<h3 id="解决冲突">解决冲突</h3>
+<p>当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。</p>
+<p>用<code>git log --graph</code>命令可以看到分支合并图。</p>
+<h3 id="分支管理策略">分支管理策略</h3>
+<p>Git分支十分强大，在团队开发中应该充分应用。</p>
+<p>合并分支时，加上<code>--no-ff</code>参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而<code>fast forward</code>合并后就看不出来曾经做过合并。</p>
+<h3 id="BUG分支">BUG分支</h3>
+<p>修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；</p>
+<p>当手头工作没完成时，先把工作现场<code>git stash</code>一下，然后去修复bug，修复后再<code>git stash pop</code>，恢复现场，恢复的同时也把stash内容删了。</p>
+<p>当多次stash，恢复的时候，先用<code>git stash list</code>查看，然后恢复制定的stash，用命令<code>git stash apply stash@&#123;0&#125;</code>，stash@{0}是查看stash list时那次stash的码。</p>
+<h3 id="Feature分支">Feature分支</h3>
+<p>开发一个新feature，最好新建一个分支；</p>
+<p>如果要丢弃一个没有被合并过的分支，可以通过<code>git branch -D &lt;name&gt;</code>强制删除。</p>
+<h3 id="多人协作">多人协作</h3>
+<p>多人协作的工作模式通常如下：</p>
+<ol>
+<li>首先，可以试图用<code>git push origin &lt;branch-name&gt;</code>推送自己的修改；</li>
+<li>如果推送失败，则因为远程分支比本地更新，需要先用<code>git pull</code>试图合并；</li>
+<li>如果合并有冲突，则解决冲突，并在本地提交；</li>
+<li>没有冲突或者解决冲突后，再用<code>git push origin &lt;branch-name&gt;</code>推送就能成功！</li>
+</ol>
+<p>如果<code>git pull</code>提示“no tracking infomation”，则说明本地分支和远程分支的链接关系没有创建，用命令<code>git branch --set-upstream &lt;branch-name&gt; origin/&lt;branch-name&gt;</code>。</p>
+<ul>
+<li>查看远程库信息，使用<code>git remote -v</code>；</li>
+<li>本地分支如果不推送到远程，对其他人就是不可见的；</li>
+</ul>
+<h2 id="标签管理">标签管理</h2>
+<h3 id="创建标签">创建标签</h3>
+<ul>
+<li>命令<code>git tag &lt;name&gt;</code>用于新建一个标签，默认为<code>HEAD</code>，也可以指定一个commit id；</li>
+<li><code>git tag -a &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以指定标签信息；</li>
+<li><code>git tag -s &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以用PGP签名标签；</li>
+<li>命令<code>git tag</code>可以查看所有标签。</li>
+</ul>
+<h3 id="操作标签">操作标签</h3>
+<ul>
+<li>命令<code>git push origin &lt;tagname&gt;</code>可以推送一个本地标签；</li>
+<li>命令<code>git push origin --tags</code>可以推送全部未推送过的标签；</li>
+<li>命令<code>git tag -d &lt;tagname&gt;</code>可以删除一个本地标签；</li>
+<li>命令<code>git push origin :refs/tags/&lt;tagname&gt;</code>可以删除一个远程标签；</li>
+</ul>
+<h2 id="使用Github">使用Github</h2>
+<ul>
+<li>在Github上，可以任意Fork开源仓库；</li>
+<li>自己拥有Fork后的仓库的读写权限；</li>
+<li>可以推送pull request给官方仓库来贡献代码。</li>
+</ul>
+<h2 id="使用码云">使用码云</h2>
+<ul>
+<li>码云和Github的使用方法差不多，具体参考上一节<strong>使用Github</strong>；</li>
+<li>因为众所周知的原因Github访问速度比较感人，But码云不会，并且是国内的；</li>
+<li>有免费的私有仓库，And支持中文，简直是我等英语渣渣的福音；</li>
+</ul>
+<p>本地库与多个远程库关联，嗯，不想说了，直接看廖雪峰<a href="https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000">Git教程</a>这一节吧。</p>
+<h2 id="自定义Git">自定义Git</h2>
+<h3 id="忽略特殊文件">忽略特殊文件</h3>
+<ul>
+<li>编写<code>.gitignore</code>文件，把要忽略的文件名填进去，Git就会自动忽略这些文件。<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a> 上的稍微改一下就可以用了</li>
+<li><code>.gitignore</code>文件本身要放到版本库里，并且可以对<code>.gitignore</code>做版本管理</li>
+</ul>
+<p>忽略文件的原则：</p>
+<ol>
+<li>忽略操作系统自动生成的文件，比如缩略图等；</li>
+<li>忽略编译生成的中间文件、可执行文件等；</li>
+<li>忽略带有自己敏感信息的配置文件；</li>
+</ol>
+<h3 id="配置别名">配置别名</h3>
+<ul>
+<li><code>git config --global alias.st status</code>表示用<code>st</code>作为<code>status</code>的别名，以后敲<code>git st</code>就可以了</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global alias.co checkout</span><br><span class="line">git config --global alias.ci commit</span><br><span class="line">git config --global alias.br brach</span><br><span class="line">git config --global alias.last <span class="string">&#x27;log -1&#x27;</span>     //用`git last`显示最后一次提的交</span><br><span class="line">git config --global alias.lg <span class="string">&quot;log --color --graph --pretty=format:&#x27;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&#x27; --abbrev-commit&quot;</span>     //查看提交历史，丧心病狂版</span><br></pre></td></tr></table></figure>
+<h2 id="搭建Git服务器">搭建Git服务器</h2>
+<ul>
+<li>
+<p>搭建Git服务器，参考<a href="https://github.com/sitaramc/gitolite">教程原文</a>；</p>
+</li>
+<li>
+<p>要方便管理公钥，用<a href="https://github.com/sitaramc/gitolite">Gitosis</a>；</p>
+</li>
+<li>
+<p>要像SVN那样变态控制权限，用 Gitolite；</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>博弈论从入门到放弃</title>
+    <url>/posts/game-theory-00/</url>
+    <content><![CDATA[<blockquote>
+<p>博弈(game)是指在一定的游戏规则约束下，基于直接相互作用的环境条件，各参与者依据各自所掌握的信息，选择各自的策略(行动)，以实现利益最大化的过程。博弈论(game theory)是一种研究人们怎么做策略(行动)选择，及其最后的均衡结果会是什么的理论。</p>
+</blockquote>
+<hr>
+<p>第一次学个定义就差不多了。有个强盗分金币的游戏。</p>
+<p>5个强盗来分100个金币。首先由第一个强盗提出分配方案，如果5个强盗中半数或半数以上通过（包括自己在内），则分配方案成立，分配结束。若不能通过，则第一个强盗将被扔到海里，并继续由第二个强盗提出分配方案。如此往复，一直到有人提出的分配方案通过为止。</p>
+<p>问题：假设5个强盗都是个人利益最大化的追求者（理性，足够聪明），并且决策的顺序事先已排好。那么，你希望自己排在第几位？如果你抽签后，被排在第一位，那么作为第一个强盗的你，将会提出一个怎样的分配方案，以便让自己得到最大的利益？<br>
+如果强盗的数量从5个变成了1000个，那么最后的分配结果又会是如何？</p>
+<div class="hide-block"><button type="button" class="hide-button" style="">思路</button><div class="hide-content"><p>梳理一下，站在海盗个人的角度看，有这几条规则：</p>
+<ol>
+<li>保命优先，分钱其次</li>
+<li>利益最大化</li>
+<li>收益相同，最好杀掉</li>
+</ol>
+<p>假定强盗是1，2，3，4，5，由1开始出方案，方案1对应强盗1。反向思考。首先轮不到强盗5来分。强盗4要独吞——方案4，必须先把强盗3扔下去。强盗3知道强盗4要投反对票，他只能拉拢强盗5——方案3，必须先把强盗2扔下去。强盗2知道强盗3要杀他，所以拉拢强盗4——方案2，必须先把强盗1扔下去。为了不被扔下去，强盗1只能拉拢强盗3、5。所以你的方案是（98，0，1，0，1）。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">方案</th>
+<th style="text-align:center">强盗1</th>
+<th style="text-align:center">强盗2</th>
+<th style="text-align:center">强盗3</th>
+<th style="text-align:center">强盗4</th>
+<th style="text-align:center">强盗5</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">100</td>
+<td style="text-align:center">0</td>
+<td>独吞</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">99</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td>拉拢强盗5</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">99</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td>拉拢强盗4</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">98</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td>拉拢强盗3、5</td>
+</tr>
+</tbody>
+</table>
+<p>总结规律，拉拢上一轮倒推时没收益的，1金币/人，能获得半数选票的同时，自己收益最大。</p>
+<p>1……1000：按此思路100金币，只够倒数200人分，后面说的都是倒数。</p>
+<p>201没有金币可分，为了保命会无条件支持202。</p>
+<p>202随意，确定可以活下来😄。</p>
+<p>203为了保命，会无条件支持204。</p>
+<p>204一票 + 203一票 + 100金币可以获得半数，204确定可以活下来😄。</p>
+<p>205为了保命，会无条件支持206。206的票 + 205的票 + 100金币不够半数，所以206也会无条件支持207。同理207也会无条件支持208。</p>
+<p>208的票 + 207的 + 206的 + 205的 + 100金币足够半数，所以208确定可以活下来😄。</p>
+<p>总结规律：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>200</mn><mo>+</mo><msup><mn>2</mn><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">200 + 2^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">200</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span> 的强盗确定可以活下来。这个规律到什么时候为止呢？<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>200</mn><mo>+</mo><msup><mn>2</mn><mn>9</mn></msup><mo>=</mo><mn>712</mn></mrow><annotation encoding="application/x-tex">200 + 2^9 = 712</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">200</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">9</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">712</span></span></span></span>，即之前的288个强盗会被扔下去，只能怪命不好喽。</p>
+</div></div>
+]]></content>
+      <categories>
+        <category>思考</category>
+      </categories>
+      <tags>
+        <tag>博弈论</tag>
       </tags>
   </entry>
   <entry>
