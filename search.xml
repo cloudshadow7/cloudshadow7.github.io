@@ -1,6 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Git笔记</title>
+    <url>/posts/git-notes/</url>
+    <content><![CDATA[<h2 id="Git简介">Git简介</h2>
+<h3 id="Git的诞生">Git的诞生</h3>
+<h3 id="集中式vs分布式">集中式vs分布式</h3>
+<h2 id="安装Git">安装Git</h2>
+<p><strong>在Linux上安装Git</strong></p>
+<p>在Debian系上用<code>sudo apt-get install git</code>就可以。</p>
+<p>安装完成后，还需要最后一步，在命令行中输入：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name <span class="string">&quot;Your Name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;email@example.com&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="创建版本库">创建版本库</h2>
+<p>初始化一个Git仓库，使用<code>git init</code>命令。<br>
+添加文件到Git仓库，分为两步：</p>
+<ul>
+<li>第一步，使用<code>git add &lt;file&gt;</code>，可反复使用多次，添加多个文件；</li>
+<li>第二步，使用命令<code>git commit -m &quot;注释&quot;</code>，完成</li>
+</ul>
+<h2 id="时光穿梭机">时光穿梭机</h2>
+<ul>
+<li>要随时掌握工作区的状态，使用<code>git status</code>命令。</li>
+<li>如果<code>git status</code>告诉你有文件被修改过，用<code>git diff</code>可以查看修改内容</li>
+</ul>
+<h3 id="版本回退">版本回退</h3>
+<ul>
+<li><code>HEAD</code>指向的版本就是当前版本，上一个版本是<code>HEAD^</code>，上上一个版本是<code>HEAD^^</code>。Git允许我们在版本的历史之间穿梭，使用命令<code>git reset --hard commit_id</code>。</li>
+<li>穿梭前，用<code>git log</code>可以查看提交历史，以便确定要回退到哪个版本。如果嫌输出信息太多，可以试试<code>git log --pretty=oneline</code></li>
+<li>要重返未来，用<code>git reflog</code>查看命令历史，以便确定要回到未来的哪个版本。</li>
+</ul>
+<h3 id="工作区和暂存区">工作区和暂存区</h3>
+<p><code>git add</code>命令实际上就是把要提交的所有修改放到暂存区（Stage），然后，执行<code>git commit</code>就可以一次性把暂存区的所有修改提交到分支。例如<code>git commit -m &quot;&lt;修改的内容&gt;&quot;</code></p>
+<h3 id="管理修改">管理修改</h3>
+<p>用<code>git diff HEAD -- file</code>查看工作区的版本库里最新版的区别</p>
+<h3 id="撤销修改">撤销修改</h3>
+<p>场景1：当改乱了工作区某个文件的内容 想直接丢弃工作区的修改时，可以用<code>git checkout -- file</code>。</p>
+<p>场景2：改乱的工作区文件已经添加到了暂存区，想丢弃，先用命令<code>git reset HEAD file</code>可以把暂存区的修改撤销掉（unstaged），重新放回工作区；然后用<code>git checkout -- file</code>。</p>
+<p>场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考<strong>版本回退</strong>部分，前提时没有推送到远程仓库。</p>
+<h3 id="删除文件">删除文件</h3>
+<p>用<code>git rm file</code>来删除一个文件。</p>
+<h2 id="远程仓库">远程仓库</h2>
+<p>前提：已注册<a href="https://github.com/">Github</a></p>
+<p>第1步：创建SSH Key。<code>ssh-keygen -t rsa -C &quot;youremail@example.com&quot;</code>,修建地址换为自己的邮箱地址，回车，yes。正常的话会看到用户主目录下的<code>.ssh</code>目录下找到<code>id_rsa</code>私钥，<code>id_rsa.pub</code>公钥。</p>
+<p>第2步：打开Github的设置，增加SSH Key，填上<code>id_rsa.pub</code>文件里的内容。OK！</p>
+<h3 id="添加远程仓库">添加远程仓库</h3>
+<p>要关联一个远程库，使用命令<code>git remote add origin git@server-name:path/repo-name.git</code>；<br>
+关联后，使用命令<code>git push -u origin master</code>第一次推送master分支所有内容；<br>
+此后，每次提交后，只要有必要，就可以使用命令<code>git push origin master</code>推送最新修改；<br>
+分布式版本控制系统的最大好处之一是有没有联网都可以正常工作，有网的时候推送一下就同步了。</p>
+<h3 id="从远程仓库克隆">从远程仓库克隆</h3>
+<p>要克隆一个仓库，首先必须只当仓库的地址，然后使用<code>git clone</code>命令克隆。</p>
+<p>Git支持多种协议，包括<code>https</code>，但是通过<code>ssh</code>支持的原生<code>git</code>协议速度最快。</p>
+<h2 id="分支管理">分支管理</h2>
+<h3 id="创建与合并分支">创建与合并分支</h3>
+<p>Git鼓励大量使用分支：</p>
+<p>查看分支：<code>git branch</code><br>
+创建分支：<code>git branch &lt;name&gt;</code><br>
+切换分支：<code>git checkout &lt;name&gt;</code><br>
+创建+切换分支：<code>git checkout -b &lt;name&gt;</code><br>
+合并某分支到当前分支：<code>git merge &lt;name&gt;</code><br>
+删除分支：<code>git branch -d &lt;name&gt;</code></p>
+<h3 id="解决冲突">解决冲突</h3>
+<p>当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。</p>
+<p>用<code>git log --graph</code>命令可以看到分支合并图。</p>
+<h3 id="分支管理策略">分支管理策略</h3>
+<p>Git分支十分强大，在团队开发中应该充分应用。</p>
+<p>合并分支时，加上<code>--no-ff</code>参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而<code>fast forward</code>合并后就看不出来曾经做过合并。</p>
+<h3 id="BUG分支">BUG分支</h3>
+<p>修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；</p>
+<p>当手头工作没完成时，先把工作现场<code>git stash</code>一下，然后去修复bug，修复后再<code>git stash pop</code>，恢复现场，恢复的同时也把stash内容删了。</p>
+<p>当多次stash，恢复的时候，先用<code>git stash list</code>查看，然后恢复制定的stash，用命令<code>git stash apply stash@&#123;0&#125;</code>，stash@{0}是查看stash list时那次stash的码。</p>
+<h3 id="Feature分支">Feature分支</h3>
+<p>开发一个新feature，最好新建一个分支；</p>
+<p>如果要丢弃一个没有被合并过的分支，可以通过<code>git branch -D &lt;name&gt;</code>强制删除。</p>
+<h3 id="多人协作">多人协作</h3>
+<p>多人协作的工作模式通常如下：</p>
+<ol>
+<li>首先，可以试图用<code>git push origin &lt;branch-name&gt;</code>推送自己的修改；</li>
+<li>如果推送失败，则因为远程分支比本地更新，需要先用<code>git pull</code>试图合并；</li>
+<li>如果合并有冲突，则解决冲突，并在本地提交；</li>
+<li>没有冲突或者解决冲突后，再用<code>git push origin &lt;branch-name&gt;</code>推送就能成功！</li>
+</ol>
+<p>如果<code>git pull</code>提示“no tracking infomation”，则说明本地分支和远程分支的链接关系没有创建，用命令<code>git branch --set-upstream &lt;branch-name&gt; origin/&lt;branch-name&gt;</code>。</p>
+<ul>
+<li>查看远程库信息，使用<code>git remote -v</code>；</li>
+<li>本地分支如果不推送到远程，对其他人就是不可见的；</li>
+</ul>
+<h2 id="标签管理">标签管理</h2>
+<h3 id="创建标签">创建标签</h3>
+<ul>
+<li>命令<code>git tag &lt;name&gt;</code>用于新建一个标签，默认为<code>HEAD</code>，也可以指定一个commit id；</li>
+<li><code>git tag -a &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以指定标签信息；</li>
+<li><code>git tag -s &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以用PGP签名标签；</li>
+<li>命令<code>git tag</code>可以查看所有标签。</li>
+</ul>
+<h3 id="操作标签">操作标签</h3>
+<ul>
+<li>命令<code>git push origin &lt;tagname&gt;</code>可以推送一个本地标签；</li>
+<li>命令<code>git push origin --tags</code>可以推送全部未推送过的标签；</li>
+<li>命令<code>git tag -d &lt;tagname&gt;</code>可以删除一个本地标签；</li>
+<li>命令<code>git push origin :refs/tags/&lt;tagname&gt;</code>可以删除一个远程标签；</li>
+</ul>
+<h2 id="使用Github">使用Github</h2>
+<ul>
+<li>在Github上，可以任意Fork开源仓库；</li>
+<li>自己拥有Fork后的仓库的读写权限；</li>
+<li>可以推送pull request给官方仓库来贡献代码。</li>
+</ul>
+<h2 id="使用码云">使用码云</h2>
+<ul>
+<li>码云和Github的使用方法差不多，具体参考上一节<strong>使用Github</strong>；</li>
+<li>因为众所周知的原因Github访问速度比较感人，But码云不会，并且是国内的；</li>
+<li>有免费的私有仓库，And支持中文，简直是我等英语渣渣的福音；</li>
+</ul>
+<p>本地库与多个远程库关联，嗯，不想说了，直接看廖雪峰<a href="https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000">Git教程</a>这一节吧。</p>
+<h2 id="自定义Git">自定义Git</h2>
+<h3 id="忽略特殊文件">忽略特殊文件</h3>
+<ul>
+<li>编写<code>.gitignore</code>文件，把要忽略的文件名填进去，Git就会自动忽略这些文件。<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a> 上的稍微改一下就可以用了</li>
+<li><code>.gitignore</code>文件本身要放到版本库里，并且可以对<code>.gitignore</code>做版本管理</li>
+</ul>
+<p>忽略文件的原则：</p>
+<ol>
+<li>忽略操作系统自动生成的文件，比如缩略图等；</li>
+<li>忽略编译生成的中间文件、可执行文件等；</li>
+<li>忽略带有自己敏感信息的配置文件；</li>
+</ol>
+<h3 id="配置别名">配置别名</h3>
+<ul>
+<li><code>git config --global alias.st status</code>表示用<code>st</code>作为<code>status</code>的别名，以后敲<code>git st</code>就可以了</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global alias.co checkout</span><br><span class="line">git config --global alias.ci commit</span><br><span class="line">git config --global alias.br brach</span><br><span class="line">git config --global alias.last <span class="string">&#x27;log -1&#x27;</span>     //用`git last`显示最后一次提的交</span><br><span class="line">git config --global alias.lg <span class="string">&quot;log --color --graph --pretty=format:&#x27;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&#x27; --abbrev-commit&quot;</span>     //查看提交历史，丧心病狂版</span><br></pre></td></tr></table></figure>
+<h2 id="搭建Git服务器">搭建Git服务器</h2>
+<ul>
+<li>
+<p>搭建Git服务器，参考<a href="https://github.com/sitaramc/gitolite">教程原文</a>；</p>
+</li>
+<li>
+<p>要方便管理公钥，用<a href="https://github.com/sitaramc/gitolite">Gitosis</a>；</p>
+</li>
+<li>
+<p>要像SVN那样变态控制权限，用 Gitolite；</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>技术</category>
+      </categories>
+      <tags>
+        <tag>Git</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Java问题排查</title>
     <url>/posts/java-troubleshooting/</url>
     <content><![CDATA[<h2 id="排查业务问题">排查业务问题</h2>
@@ -410,157 +561,6 @@ IP2：192.168.18.6		子网掩码2：255.255.240.0</p>
       </tags>
   </entry>
   <entry>
-    <title>Git笔记</title>
-    <url>/posts/git-notes/</url>
-    <content><![CDATA[<h2 id="Git简介">Git简介</h2>
-<h3 id="Git的诞生">Git的诞生</h3>
-<h3 id="集中式vs分布式">集中式vs分布式</h3>
-<h2 id="安装Git">安装Git</h2>
-<p><strong>在Linux上安装Git</strong></p>
-<p>在Debian系上用<code>sudo apt-get install git</code>就可以。</p>
-<p>安装完成后，还需要最后一步，在命令行中输入：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name <span class="string">&quot;Your Name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;email@example.com&quot;</span></span><br></pre></td></tr></table></figure>
-<h2 id="创建版本库">创建版本库</h2>
-<p>初始化一个Git仓库，使用<code>git init</code>命令。<br>
-添加文件到Git仓库，分为两步：</p>
-<ul>
-<li>第一步，使用<code>git add &lt;file&gt;</code>，可反复使用多次，添加多个文件；</li>
-<li>第二步，使用命令<code>git commit -m &quot;注释&quot;</code>，完成</li>
-</ul>
-<h2 id="时光穿梭机">时光穿梭机</h2>
-<ul>
-<li>要随时掌握工作区的状态，使用<code>git status</code>命令。</li>
-<li>如果<code>git status</code>告诉你有文件被修改过，用<code>git diff</code>可以查看修改内容</li>
-</ul>
-<h3 id="版本回退">版本回退</h3>
-<ul>
-<li><code>HEAD</code>指向的版本就是当前版本，上一个版本是<code>HEAD^</code>，上上一个版本是<code>HEAD^^</code>。Git允许我们在版本的历史之间穿梭，使用命令<code>git reset --hard commit_id</code>。</li>
-<li>穿梭前，用<code>git log</code>可以查看提交历史，以便确定要回退到哪个版本。如果嫌输出信息太多，可以试试<code>git log --pretty=oneline</code></li>
-<li>要重返未来，用<code>git reflog</code>查看命令历史，以便确定要回到未来的哪个版本。</li>
-</ul>
-<h3 id="工作区和暂存区">工作区和暂存区</h3>
-<p><code>git add</code>命令实际上就是把要提交的所有修改放到暂存区（Stage），然后，执行<code>git commit</code>就可以一次性把暂存区的所有修改提交到分支。例如<code>git commit -m &quot;&lt;修改的内容&gt;&quot;</code></p>
-<h3 id="管理修改">管理修改</h3>
-<p>用<code>git diff HEAD -- file</code>查看工作区的版本库里最新版的区别</p>
-<h3 id="撤销修改">撤销修改</h3>
-<p>场景1：当改乱了工作区某个文件的内容 想直接丢弃工作区的修改时，可以用<code>git checkout -- file</code>。</p>
-<p>场景2：改乱的工作区文件已经添加到了暂存区，想丢弃，先用命令<code>git reset HEAD file</code>可以把暂存区的修改撤销掉（unstaged），重新放回工作区；然后用<code>git checkout -- file</code>。</p>
-<p>场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考<strong>版本回退</strong>部分，前提时没有推送到远程仓库。</p>
-<h3 id="删除文件">删除文件</h3>
-<p>用<code>git rm file</code>来删除一个文件。</p>
-<h2 id="远程仓库">远程仓库</h2>
-<p>前提：已注册<a href="https://github.com/">Github</a></p>
-<p>第1步：创建SSH Key。<code>ssh-keygen -t rsa -C &quot;youremail@example.com&quot;</code>,修建地址换为自己的邮箱地址，回车，yes。正常的话会看到用户主目录下的<code>.ssh</code>目录下找到<code>id_rsa</code>私钥，<code>id_rsa.pub</code>公钥。</p>
-<p>第2步：打开Github的设置，增加SSH Key，填上<code>id_rsa.pub</code>文件里的内容。OK！</p>
-<h3 id="添加远程仓库">添加远程仓库</h3>
-<p>要关联一个远程库，使用命令<code>git remote add origin git@server-name:path/repo-name.git</code>；<br>
-关联后，使用命令<code>git push -u origin master</code>第一次推送master分支所有内容；<br>
-此后，每次提交后，只要有必要，就可以使用命令<code>git push origin master</code>推送最新修改；<br>
-分布式版本控制系统的最大好处之一是有没有联网都可以正常工作，有网的时候推送一下就同步了。</p>
-<h3 id="从远程仓库克隆">从远程仓库克隆</h3>
-<p>要克隆一个仓库，首先必须只当仓库的地址，然后使用<code>git clone</code>命令克隆。</p>
-<p>Git支持多种协议，包括<code>https</code>，但是通过<code>ssh</code>支持的原生<code>git</code>协议速度最快。</p>
-<h2 id="分支管理">分支管理</h2>
-<h3 id="创建与合并分支">创建与合并分支</h3>
-<p>Git鼓励大量使用分支：</p>
-<p>查看分支：<code>git branch</code><br>
-创建分支：<code>git branch &lt;name&gt;</code><br>
-切换分支：<code>git checkout &lt;name&gt;</code><br>
-创建+切换分支：<code>git checkout -b &lt;name&gt;</code><br>
-合并某分支到当前分支：<code>git merge &lt;name&gt;</code><br>
-删除分支：<code>git branch -d &lt;name&gt;</code></p>
-<h3 id="解决冲突">解决冲突</h3>
-<p>当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。</p>
-<p>用<code>git log --graph</code>命令可以看到分支合并图。</p>
-<h3 id="分支管理策略">分支管理策略</h3>
-<p>Git分支十分强大，在团队开发中应该充分应用。</p>
-<p>合并分支时，加上<code>--no-ff</code>参数就可以用普通模式合并，合并后的历史有分支，能看出来曾经做过合并，而<code>fast forward</code>合并后就看不出来曾经做过合并。</p>
-<h3 id="BUG分支">BUG分支</h3>
-<p>修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；</p>
-<p>当手头工作没完成时，先把工作现场<code>git stash</code>一下，然后去修复bug，修复后再<code>git stash pop</code>，恢复现场，恢复的同时也把stash内容删了。</p>
-<p>当多次stash，恢复的时候，先用<code>git stash list</code>查看，然后恢复制定的stash，用命令<code>git stash apply stash@&#123;0&#125;</code>，stash@{0}是查看stash list时那次stash的码。</p>
-<h3 id="Feature分支">Feature分支</h3>
-<p>开发一个新feature，最好新建一个分支；</p>
-<p>如果要丢弃一个没有被合并过的分支，可以通过<code>git branch -D &lt;name&gt;</code>强制删除。</p>
-<h3 id="多人协作">多人协作</h3>
-<p>多人协作的工作模式通常如下：</p>
-<ol>
-<li>首先，可以试图用<code>git push origin &lt;branch-name&gt;</code>推送自己的修改；</li>
-<li>如果推送失败，则因为远程分支比本地更新，需要先用<code>git pull</code>试图合并；</li>
-<li>如果合并有冲突，则解决冲突，并在本地提交；</li>
-<li>没有冲突或者解决冲突后，再用<code>git push origin &lt;branch-name&gt;</code>推送就能成功！</li>
-</ol>
-<p>如果<code>git pull</code>提示“no tracking infomation”，则说明本地分支和远程分支的链接关系没有创建，用命令<code>git branch --set-upstream &lt;branch-name&gt; origin/&lt;branch-name&gt;</code>。</p>
-<ul>
-<li>查看远程库信息，使用<code>git remote -v</code>；</li>
-<li>本地分支如果不推送到远程，对其他人就是不可见的；</li>
-</ul>
-<h2 id="标签管理">标签管理</h2>
-<h3 id="创建标签">创建标签</h3>
-<ul>
-<li>命令<code>git tag &lt;name&gt;</code>用于新建一个标签，默认为<code>HEAD</code>，也可以指定一个commit id；</li>
-<li><code>git tag -a &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以指定标签信息；</li>
-<li><code>git tag -s &lt;tagname&gt; -m &quot;balabala...&quot;</code>可以用PGP签名标签；</li>
-<li>命令<code>git tag</code>可以查看所有标签。</li>
-</ul>
-<h3 id="操作标签">操作标签</h3>
-<ul>
-<li>命令<code>git push origin &lt;tagname&gt;</code>可以推送一个本地标签；</li>
-<li>命令<code>git push origin --tags</code>可以推送全部未推送过的标签；</li>
-<li>命令<code>git tag -d &lt;tagname&gt;</code>可以删除一个本地标签；</li>
-<li>命令<code>git push origin :refs/tags/&lt;tagname&gt;</code>可以删除一个远程标签；</li>
-</ul>
-<h2 id="使用Github">使用Github</h2>
-<ul>
-<li>在Github上，可以任意Fork开源仓库；</li>
-<li>自己拥有Fork后的仓库的读写权限；</li>
-<li>可以推送pull request给官方仓库来贡献代码。</li>
-</ul>
-<h2 id="使用码云">使用码云</h2>
-<ul>
-<li>码云和Github的使用方法差不多，具体参考上一节<strong>使用Github</strong>；</li>
-<li>因为众所周知的原因Github访问速度比较感人，But码云不会，并且是国内的；</li>
-<li>有免费的私有仓库，And支持中文，简直是我等英语渣渣的福音；</li>
-</ul>
-<p>本地库与多个远程库关联，嗯，不想说了，直接看廖雪峰<a href="https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000">Git教程</a>这一节吧。</p>
-<h2 id="自定义Git">自定义Git</h2>
-<h3 id="忽略特殊文件">忽略特殊文件</h3>
-<ul>
-<li>编写<code>.gitignore</code>文件，把要忽略的文件名填进去，Git就会自动忽略这些文件。<a href="https://github.com/github/gitignore">https://github.com/github/gitignore</a> 上的稍微改一下就可以用了</li>
-<li><code>.gitignore</code>文件本身要放到版本库里，并且可以对<code>.gitignore</code>做版本管理</li>
-</ul>
-<p>忽略文件的原则：</p>
-<ol>
-<li>忽略操作系统自动生成的文件，比如缩略图等；</li>
-<li>忽略编译生成的中间文件、可执行文件等；</li>
-<li>忽略带有自己敏感信息的配置文件；</li>
-</ol>
-<h3 id="配置别名">配置别名</h3>
-<ul>
-<li><code>git config --global alias.st status</code>表示用<code>st</code>作为<code>status</code>的别名，以后敲<code>git st</code>就可以了</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global alias.co checkout</span><br><span class="line">git config --global alias.ci commit</span><br><span class="line">git config --global alias.br brach</span><br><span class="line">git config --global alias.last <span class="string">&#x27;log -1&#x27;</span>     //用`git last`显示最后一次提的交</span><br><span class="line">git config --global alias.lg <span class="string">&quot;log --color --graph --pretty=format:&#x27;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&#x27; --abbrev-commit&quot;</span>     //查看提交历史，丧心病狂版</span><br></pre></td></tr></table></figure>
-<h2 id="搭建Git服务器">搭建Git服务器</h2>
-<ul>
-<li>
-<p>搭建Git服务器，参考<a href="https://github.com/sitaramc/gitolite">教程原文</a>；</p>
-</li>
-<li>
-<p>要方便管理公钥，用<a href="https://github.com/sitaramc/gitolite">Gitosis</a>；</p>
-</li>
-<li>
-<p>要像SVN那样变态控制权限，用 Gitolite；</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>技术</category>
-      </categories>
-      <tags>
-        <tag>Git</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>博弈论从入门到放弃</title>
     <url>/posts/game-theory-00/</url>
     <content><![CDATA[<blockquote>
@@ -692,19 +692,28 @@ IP2：192.168.18.6		子网掩码2：255.255.240.0</p>
       </tags>
   </entry>
   <entry>
-    <title>对精神分析的理解</title>
-    <url>/posts/my-view-of-psychoanalysis/</url>
-    <content><![CDATA[<p>经典精神分析的晦涩名词和“胡说八道”的理论，虽然看了两遍，现在已经忘得差不多了，哈哈哈，不重要。</p>
-<p>在我看来精神分析给来访指出一条路：<strong>你的种种感觉、种种异常不是没由来的。如果你想，借助精神分析框架下各种方向的理论，会找到你要的答案</strong>。仅此一点，就足以给来访巨大的帮助了。</p>
-<p>精神分析的本质是将思维解构然后重构。直接操作可能接受不了，需要借神秘性的东西挡在前面，间接起作用。类似于通过求神拜佛来自我暗示。</p>
-<p>事实上在来访尝试理解理论、理解自己的过程中，人格就被润物无声般的改变。这就是与其他技术流派最大的不同，更曲折也更坚定。</p>
+    <title>提前写给俄罗斯的碑文</title>
+    <url>/posts/epitaph-for-russia-in-advance/</url>
+    <content><![CDATA[<blockquote>
+<p>转载自<a href="https://www.youtube.com/post/UgkxLohZrZlUYEEIUjVNB5vhvu6Cz14yRS-K">@蒲曲波</a>。</p>
+</blockquote>
+<p>昨天有人在知乎问我：“俄罗斯的领土为什么这么大？”</p>
+<p>我的回答是：这事说来话长。</p>
+<p>张三游手好闲，还偷看妇女洗澡，被村里赶到村西头的破屋栖身，饥一顿饱一顿。一天鬼子来了，要粮、要壮丁、要花姑娘，村里人躲得干干净净，皇军一无所获。夜里，张三摸黑进了鬼子驻地告密，第二天，村里的藏粮、藏人都被搜出，张三被封为村长，带着鬼子的刀枪去收拾自己的同胞。</p>
+<p>这可以解释莫斯科公国的发家史。伊凡一世的爵位、封号、土地，靠的不是罗斯正统，而是充当蒙古人的鹰犬，替金帐汗国收税、镇压、告密、榨干自己的同胞，换取主子的封赏。至于后来吹嘘的什么弗拉基米尔大公血统？别扯了，以苏联“真理部”之强大都没能把这事儿整成真理，可见这谎言有多站不住脚。说白了，祖上其实是个坏种。不好意思！读书人不该说脏话，但看看陈琳的《讨曹操檄》：“操赘阉遗丑，本无懿德”，再看骆宾王《讨武曌檄》：“伪临朝武氏者，性非喝顺，地实寒微。”看来，我只是受到了古代文人风范的影响。</p>
+<p>唐朝时，文成公主远嫁吐蕃，带去了种子、工匠、书籍、儒生，推动吐蕃文明进步。而彼时，伊凡三世迎娶了拜占庭亡国公主索菲亚，说是带来了宗教典籍、工匠，还有那只“双头鹰”徽章（但很可能是俄罗斯人自己做的高仿）。于是，莫斯科公国摇身一变，自称“第三罗马”，仿佛娶了个流亡公主，就能祖宗升级，登基称帝了。</p>
+<p>吐蕃未敢自称“中华”，而莫斯科却敢自封“第三罗马”。他们对文化挪用的熟练度，恐怕是具有无耻遗传的天赋（华夷之辩的本意是，文明认同重于血统认同，关键在于文化的熏陶）。</p>
+<p>挣脱金帐汗国的枷锁后，莫斯科公国正式踏上了扩张之路。先是摧毁诺夫哥罗德，把罗斯地区唯一可能走向民主的城邦共和国屠个干净，彻底堵死了罗斯人的另一条发展道路。接着南下攻陷喀山、阿斯特拉罕，掌控伏尔加贸易动脉；随后一路扩张克里米亚、高加索、西伯利亚、中亚，直至远东……扩张的代价是什么？人命，且优先消耗非俄罗斯族裔的人命。</p>
+<p>这也解释了为什么今日的俄乌战争，死得最多的是布里亚特人、达吉斯坦人、车臣人，而莫斯科和圣彼得堡的年轻人依然在咖啡馆里讨论“普京多么英明”。战争打得越久，俄罗斯的主体民族就越“纯净”，如果赢了还能开疆扩土。真是典型的“双赢”啊！</p>
+<p>贯穿俄罗斯的历史，沙俄如此，苏联亦然。依靠征服而非发展，依靠镇压而非治理，依靠虚构的历史正统而非真正的国家认同。可问题是，21世纪的世界已经不是13世纪的蒙古帝国，甚至不是19世纪的欧洲殖民体系。昔日的扩张机器，如今已锈迹斑斑，能源经济被制裁掏空，战争机器被腐败掣肘，而所谓的“正统继承”更是个笑话。</p>
+<p>俄罗斯疆域的扩张，并非文明传播的结果，而是依靠暴力与欺骗的长期积累。然而，历史的负债终将面临清算。本来今天正当其时！奈何出了位“格拉斯诺夫”（此梗源自互联网调侃，称特朗普90年代在莫斯科被克格勃“看中”，以解释他为何对普京唯命是从）。对泽连斯基强硬施压，但在普京面前却唯唯诺诺。</p>
+<p>这块大地上，冬天虽长总会过去，但春天未必属于俄罗斯。</p>
 ]]></content>
       <categories>
-        <category>思考</category>
+        <category>转载</category>
       </categories>
       <tags>
-        <tag>精神分析</tag>
-        <tag>心理学</tag>
+        <tag>历史</tag>
       </tags>
   </entry>
   <entry>
@@ -733,28 +742,21 @@ IP2：192.168.18.6		子网掩码2：255.255.240.0</p>
       </tags>
   </entry>
   <entry>
-    <title>提前写给俄罗斯的碑文</title>
-    <url>/posts/epitaph-for-russia-in-advance/</url>
-    <content><![CDATA[<blockquote>
-<p>转载自<a href="https://www.youtube.com/post/UgkxLohZrZlUYEEIUjVNB5vhvu6Cz14yRS-K">@蒲曲波</a>。</p>
-</blockquote>
-<p>昨天有人在知乎问我：“俄罗斯的领土为什么这么大？”</p>
-<p>我的回答是：这事说来话长。</p>
-<p>张三游手好闲，还偷看妇女洗澡，被村里赶到村西头的破屋栖身，饥一顿饱一顿。一天鬼子来了，要粮、要壮丁、要花姑娘，村里人躲得干干净净，皇军一无所获。夜里，张三摸黑进了鬼子驻地告密，第二天，村里的藏粮、藏人都被搜出，张三被封为村长，带着鬼子的刀枪去收拾自己的同胞。</p>
-<p>这可以解释莫斯科公国的发家史。伊凡一世的爵位、封号、土地，靠的不是罗斯正统，而是充当蒙古人的鹰犬，替金帐汗国收税、镇压、告密、榨干自己的同胞，换取主子的封赏。至于后来吹嘘的什么弗拉基米尔大公血统？别扯了，以苏联“真理部”之强大都没能把这事儿整成真理，可见这谎言有多站不住脚。说白了，祖上其实是个坏种。不好意思！读书人不该说脏话，但看看陈琳的《讨曹操檄》：“操赘阉遗丑，本无懿德”，再看骆宾王《讨武曌檄》：“伪临朝武氏者，性非喝顺，地实寒微。”看来，我只是受到了古代文人风范的影响。</p>
-<p>唐朝时，文成公主远嫁吐蕃，带去了种子、工匠、书籍、儒生，推动吐蕃文明进步。而彼时，伊凡三世迎娶了拜占庭亡国公主索菲亚，说是带来了宗教典籍、工匠，还有那只“双头鹰”徽章（但很可能是俄罗斯人自己做的高仿）。于是，莫斯科公国摇身一变，自称“第三罗马”，仿佛娶了个流亡公主，就能祖宗升级，登基称帝了。</p>
-<p>吐蕃未敢自称“中华”，而莫斯科却敢自封“第三罗马”。他们对文化挪用的熟练度，恐怕是具有无耻遗传的天赋（华夷之辩的本意是，文明认同重于血统认同，关键在于文化的熏陶）。</p>
-<p>挣脱金帐汗国的枷锁后，莫斯科公国正式踏上了扩张之路。先是摧毁诺夫哥罗德，把罗斯地区唯一可能走向民主的城邦共和国屠个干净，彻底堵死了罗斯人的另一条发展道路。接着南下攻陷喀山、阿斯特拉罕，掌控伏尔加贸易动脉；随后一路扩张克里米亚、高加索、西伯利亚、中亚，直至远东……扩张的代价是什么？人命，且优先消耗非俄罗斯族裔的人命。</p>
-<p>这也解释了为什么今日的俄乌战争，死得最多的是布里亚特人、达吉斯坦人、车臣人，而莫斯科和圣彼得堡的年轻人依然在咖啡馆里讨论“普京多么英明”。战争打得越久，俄罗斯的主体民族就越“纯净”，如果赢了还能开疆扩土。真是典型的“双赢”啊！</p>
-<p>贯穿俄罗斯的历史，沙俄如此，苏联亦然。依靠征服而非发展，依靠镇压而非治理，依靠虚构的历史正统而非真正的国家认同。可问题是，21世纪的世界已经不是13世纪的蒙古帝国，甚至不是19世纪的欧洲殖民体系。昔日的扩张机器，如今已锈迹斑斑，能源经济被制裁掏空，战争机器被腐败掣肘，而所谓的“正统继承”更是个笑话。</p>
-<p>俄罗斯疆域的扩张，并非文明传播的结果，而是依靠暴力与欺骗的长期积累。然而，历史的负债终将面临清算。本来今天正当其时！奈何出了位“格拉斯诺夫”（此梗源自互联网调侃，称特朗普90年代在莫斯科被克格勃“看中”，以解释他为何对普京唯命是从）。对泽连斯基强硬施压，但在普京面前却唯唯诺诺。</p>
-<p>这块大地上，冬天虽长总会过去，但春天未必属于俄罗斯。</p>
+    <title>对精神分析的理解</title>
+    <url>/posts/my-view-of-psychoanalysis/</url>
+    <content><![CDATA[<p>经典精神分析的晦涩名词和“胡说八道”的理论，虽然看了两遍，现在已经忘得差不多了，哈哈哈，不重要。</p>
+<p>在我看来精神分析给来访指出一条路：<strong>你的种种感觉、种种异常不是没由来的。如果你想，借助精神分析框架下各种方向的理论，会找到你要的答案</strong>。仅此一点，就足以给来访巨大的帮助了。</p>
+<p>精神分析的本质是将思维解构然后重构。直接操作可能接受不了，需要借神秘性的东西挡在前面，间接起作用。类似于通过求神拜佛来自我暗示。</p>
+<p>事实上在来访尝试理解理论、理解自己的过程中，人格就被润物无声般的改变。这就是与其他技术流派最大的不同，更曲折也更坚定。</p>
+<p>—————————————————6.13更新————————————————</p>
+<p>经典精神分析似乎更注重解释，前段时间了解了一些客体关系的理论，似乎更注重关系中的体验。从关系中体会到分析师是如何对待自己的，和别人对待自己，自己对待别人有什么不同，从而促进他的转变。</p>
 ]]></content>
       <categories>
-        <category>转载</category>
+        <category>思考</category>
       </categories>
       <tags>
-        <tag>历史</tag>
+        <tag>精神分析</tag>
+        <tag>心理学</tag>
       </tags>
   </entry>
   <entry>
